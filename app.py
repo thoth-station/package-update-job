@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# project template
-# Copyright(C) 2010 Red Hat, Inc.
+# thoth-storages
+# Copyright(C) 2020 Kevin Postlethwait
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,46 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""This is the main script of the template project."""
+"""This is run periodically to ensure integrity of Python Packages stored in the database."""
 
-from template.version import __version__
+from thoth.storages import GraphDatabase
+from thoth.python import Source
+import logging
+
+_LOGGER = logging.getLogger(__name__)
+
+def main():
+    graph = GraphDatabase()
+    graph.connect()
+    graph.initialize_schema()
+
+    removed_pkgs = set()
+
+    all_pkgs =  graph.python_packages_all()
+    _LOGGER.info("Checking availability of %r package(s)", len(all_pkgs))
+    for pkg in all_pkgs:
+        src = Source(pkg_ver[1])
+        if not src.provides_package(pkg_ver[0]):
+            removed_pkgs.add(f"{pkg_ver[1]}_{pkg_ver[0]}")
+            _LOGGER.debug("%r no longer provides %r", pkg_ver[1], pkg_ver[0])
+
+    all_pkg_vers = graph.get_python_package_versions_all()
+    _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_ver))
+    for pkg_ver in all_pkg_vers:
+
+        # Skip because we have already marked the entire package as missing
+        if f"{pkg_ver[2]}-{pkg_ver[0]}" in removed_pkgs:
+            continue
+
+        src = Source(pkg_ver[2])
+        if not src.provides_package_version(pkg_ver[0], pkg_ver[1]):
+            _LOGGER.debug("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
+            continue
+
+        source_hashes = sorted([i["sha256"] for i in src.get_package_hashes(pkg_ver[0], pkg_ver[1])])
+        stored_hashes = sorted(graph.get_python_package_hashes_sha256(pkg_ver[0], pkg_ver[1], pkg_ver[2]))
+        if not source_hashes == stored_hashes:
+            _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
 
 if __name__ == "__main__":
-    print(f"A template project with Thoth integration, v{__version__}.")
+    main()
