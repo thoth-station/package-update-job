@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 thoth-python = "*"
 thoth-storages = "*"
+faust = "*"
 
 [requires]
 python_version = "3.6"
