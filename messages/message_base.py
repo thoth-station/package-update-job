@@ -22,6 +22,7 @@
 import os
 import json
 import logging
+import ssl
 
 import kafka
 import faust
@@ -37,31 +38,48 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 KAFKA_CAFILE = os.getenv("KAFKA_CAFILE", "ca.crt")
 KAFKA_CLIENT_ID = os.getenv("KAFKA_CLIENT_ID", "thoth-messaging")
 KAFKA_PROTOCOL = os.getenv("KAFKA_PROTOCOL", "SSL")
+KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
 
 MESSAGE_BASE_TOPIC = "base-topic"
 
 class MessageBase:
     """Class used for Package Release events on Kafka topic."""
-
-    admin_client = KafkaAdminClient(
-        bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
-        # client_id=KAFKA_CAFILE,
-        # security_protocol=KAFKA_PROTOCOL,
-        # ssl_cafile=KAFKA_CAFILE,
-    )
+    
+    ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=KAFKA_CAFILE)
+    app = faust.App(
+        "thoth-messaging",
+        broker=KAFKA_BOOTSTRAP_SERVERS,
+        value_serializer="json",
+        ssl_context=ssl_context,
+        web_enabled=True,
+        web_bind="0.0.0.0",
+        web_port=8080,
+    )  
 
     producer = KafkaProducer(
         bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
         acks=0,  # Wait for leader to write the record to its local log only.
         compression_type="gzip",
-        # value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+        value_serializer=lambda v: json.dumps(v).encode("utf-8"),
         # security_protocol=KAFKA_PROTOCOL,
         # ssl_cafile=KAFKA_CAFILE,
     )
 
-    def __init__(self, topic_name: str = MESSAGE_BASE_TOPIC, num_partitions: int = 1, replication_factor: int = 1):
-        self.topic = topic_name
-        self.create_topic(num_partitions = num_partitions, replication_factor = replication_factor)
+    def __init__(
+        self,
+        topic_name: str = MESSAGE_BASE_TOPIC,
+        value_type = None,
+        num_partitions: int = 1,
+        replication_factor: int = 1
+    ):
+        self.topic = self.app.topic(
+            topic_name,
+            value_type=value_type,
+            retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS,
+            partitions=1,
+            internal=True,
+        )
+
 
     def create_topic(self, num_partitions: int = 1, replication_factor: int = 1):
         """Create the topic on our Kafka broker."""
@@ -75,13 +93,14 @@ class MessageBase:
         except kafka.errors.TopicAlreadyExistsError as excptn:
             _LOGGER.debug("Topic already exists")
 
-    def publish_to_topic(self, payload: dict):
-        """Publish the given dict to a Kafka topic."""
-        try:
-            future = self.producer.send(self.topic_name, payload)
-            result = future.get(timeout=6)
-            _LOGGER.debug(result)
-        except AttributeError as excptn:
-            _LOGGER.debug(excptn)
-        except (kafka.errors.NotLeaderForPartitionError, kafka.errors.KafkaTimeoutError) as excptn:
-            _LOGGER.exception(excptn)
+    def publish_to_topic(self, value):
+        self.topic.send(value=value)
+        # """Publish the given dict to a Kafka topic."""
+        # try:
+        #     future = self.producer.send(self.topic_name, payload)
+        #     result = future.get(timeout=6)
+        #     _LOGGER.debug(result)
+        # except AttributeError as excptn:
+        #     _LOGGER.debug(excptn)
+        # except (kafka.errors.NotLeaderForPartitionError, kafka.errors.KafkaTimeoutError) as excptn:
+        #     _LOGGER.exception(excptn)

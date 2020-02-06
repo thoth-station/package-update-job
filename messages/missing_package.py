@@ -47,6 +47,7 @@ class MissingPackageMessage(MessageBase):
     def __init__(self, num_partitions: int = 1, replication_factor: int = 1):
         super(MissingPackageMessage, self).__init__(
             self.topic_name,
+            value_type=self.MessageContents,
             num_partitions = num_partitions,
             replication_factor = replication_factor,
         )

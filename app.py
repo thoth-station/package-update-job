@@ -43,10 +43,12 @@ def main():
     _LOGGER.info("Checking availability of %r package(s)", len(all_pkgs))
     for pkg in all_pkgs:
         src = Source(pkg[1])
+        a = missing_package.MessageContents(index_url = pkg[1], package_name=pkg[0])
+        print(a.dumps())
         if not src.provides_package(pkg[0]):
             removed_pkgs.add(f"{pkg[1]}_{pkg[0]}")
             missing_package.publish_to_topic(
-                missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0]).dumps()
+                missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0])
             )
             _LOGGER.debug("%r no longer provides %r", pkg[1], pkg[0])
 
@@ -64,7 +66,7 @@ def main():
                 missing_version.MessageContents(
                     index_url=pkg_ver[2], 
                     package_name=pkg_ver[0], 
-                    package_version=pkg_ver[1]).dumps()
+                    package_version=pkg_ver[1])
             )
             _LOGGER.debug("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
             continue
@@ -76,7 +78,7 @@ def main():
                 hash_mismatch.MessageContents(
                     index_url=pkg_ver[2], 
                     package_name=pkg_ver[0], 
-                    package_version=pkg_ver[1]).dumps()
+                    package_version=pkg_ver[1])
             )
             _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
 

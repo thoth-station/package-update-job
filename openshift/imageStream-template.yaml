@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: package-update-imagestream
+  annotations:
+    description: This is Thoth Core - Package Update ImageStream
+    openshift.io/display-name: "Thoth: Package Releases ImageStream"
+    version: 0.4.0
+    tags: poc,thoth,ai-stacks,package-update
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to deploy Thoth Package Update
+      ImageStream as a Proof-of-Concept to OpenShift.
+    template.openshift.io/provider-display-name: Red Hat, Inc.
+    thoth-station.ninja/template-version: 0.4.0
+  labels:
+    template: package-Update-imagestream
+    app: thoth
+    component: package-releases
+
+objects:
+  - kind: ImageStream
+    apiVersion: image.openshift.io/v1
+    metadata:
+      annotations:
+        thoth-station.ninja/template-version: 0.4.0
+      labels:
+        app: thoth
+        component: package-update
+      name: package-update-job
+    spec:
+      name: latest
+      lookupPolicy:
+        local: true
