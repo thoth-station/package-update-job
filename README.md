@@ -1,12 +1,49 @@
-# template-project
+# thoth-package-update-job
 
-This is a Template for any Python based project, it contains what Project Thoth and the AI CoE need:
+--------------------------
 
-1. GitHub defaults and Templates for issues
-2. configuration for Coala and Black (code formating)
-3. basic configuration for Zuul
-4. configuration for Thoth (stage environment, Red Hat VPN only)
-5. if you are writing a Python module, Kebechet could manage releases of your packages for you
-6. if credentials are provided, Python module releases could be published to PyPI
+This job iterates over the packages in our database to ensure that they:
 
-Dependencies should be managed using `pipenv` (`Pipfile`, and the `Pipfile.lock` could be created by `thamos advise`), `pip3` and a `requirements.txt` files could be used.
+* still exist
+* haven't changed
+
+This job is run periodically as an OpenShift CronJob. The job checks the availability
+of packages as well as their hashes to make sure they match what Thoth has stored.
+
+Logic behind package update
+============================================
+
+We get a list of all packages which we have analyzed. Then, we check whether.
+
+* the package still exists on that index
+* that version of the package still exists
+* if the SHA256 from source matches what we have stored
+
+If we find any of these issues we post to a Kafka topic so that a consumer can
+decide how to handle the update.
+
+Installation and Deployment
+===========================
+
+The job is an OpenShift s2i build, the deployment is done via Ansible
+playbooks that live in the [core repository](https://github.com/thoth-station/core).
+
+Running the job locally
+=======================
+
+You can run this job locally without a cluster deployment. To do so, prepare
+your virtual environment:
+
+.. code-block:: console
+
+  $ pipenv install  --dev # Install all the requirements
+
+After that, you need to run a local instance of database - follow 
+[instructions in the README](https://github.com/thoth-station/storages#running-postgresql-locally) file for 
+more info and prepare the database schema:
+
+  $ pipenv run python3 ./app.py
+
+Job will talk to your local database instance by default which is located at
+`localhost:5432` by default. And your local Kafka instance which is `localhost:9092`
+by default.
