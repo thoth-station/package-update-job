@@ -35,22 +35,24 @@ _LOGGER = logging.getLogger(__name__)
 
 MISSING_VERSION_TOPIC = "missing-package-version"
 
+
 class MissingVersionMessage(MessageBase):
     """Class used for Package Release events on Kafka topic."""
 
     topic_name = "missing-package-version"
 
     class MessageContents(faust.Record, serializer="json"):
-        """Class used to represent a contents of a missing-package message Kafka topic"""
+        """Class used to represent a contents of a missing-package message Kafka topic."""
 
         index_url: str
         package_name: str
         package_version: str
 
     def __init__(self, num_partitions: int = 1, replication_factor: int = 1):
+        """Initialize missing-package-version topic."""
         super(MissingVersionMessage, self).__init__(
-                self.topic_name,
-                value_type=self.MessageContents,
-                num_partitions = num_partitions,
-                replication_factor = replication_factor
-            )
+            self.topic_name,
+            value_type=self.MessageContents,
+            num_partitions=num_partitions,
+            replication_factor=replication_factor,
+        )

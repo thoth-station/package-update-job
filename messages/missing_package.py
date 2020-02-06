@@ -33,21 +33,23 @@ from .message_base import MessageBase
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class MissingPackageMessage(MessageBase):
     """Class used for Package Release events on Kafka topic."""
 
     topic_name = "missing-package"
 
     class MessageContents(faust.Record, serializer="json"):
-        """Class used to represent a contents of a missing-package message Kafka topic"""
+        """Class used to represent a contents of a missing-package message Kafka topic."""
 
         index_url: str
         package_name: str
 
     def __init__(self, num_partitions: int = 1, replication_factor: int = 1):
+        """Initialize missing-package topic."""
         super(MissingPackageMessage, self).__init__(
             self.topic_name,
             value_type=self.MessageContents,
-            num_partitions = num_partitions,
-            replication_factor = replication_factor,
+            num_partitions=num_partitions,
+            replication_factor=replication_factor,
         )
