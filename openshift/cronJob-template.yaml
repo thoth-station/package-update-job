@@ -73,6 +73,12 @@ objects:
                 - image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/package-update-job:${IMAGE_STREAM_TAG}"
                   name: package-update
                   env:
+                    - name: KAFKA_BOOTSTRAP_SERVERS
+                      value: "stage-kafka-bootstrap-dh-stage-message-bus.cloud.paas.stage.psi.redhat.com:443"
+                    - name: KAFKA_CAFILE
+                      value: "/mnt/secrets/kafka_ca.crt"
+                    - name: KAFKA_TOPIC_RETENTION_TIME_SECONDS
+                      value: 60*60*24
                     - name: RSYSLOG_HOST
                       valueFrom:
                         configMapKeyRef:

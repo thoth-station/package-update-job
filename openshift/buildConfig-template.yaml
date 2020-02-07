@@ -31,10 +31,10 @@ objects:
     spec:
       resources:
         limits:
-          cpu: 2000m
+          cpu: 1000m
           memory: 768Mi
         requests:
-          cpu: 2000m
+          cpu: 1000m
           memory: 768Mi
       output:
         to:
