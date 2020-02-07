@@ -23,11 +23,7 @@ import os
 import json
 import logging
 
-import kafka
 import faust
-
-from kafka import KafkaProducer
-from kafka.admin import KafkaAdminClient, NewTopic
 
 from .message_base import MessageBase
 
