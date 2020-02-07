@@ -2,22 +2,19 @@
     check:
       jobs:
         - "thoth-coala"
-        - "thoth-pytest"
     gate:
-      queue: "CHANGEME"
+      queue: "thoth-station/core"
       jobs:
         - "thoth-coala"
-        - "thoth-pytest"
     post:
       jobs:
         - "trigger-build":
             vars:
               cluster: "paas.psi.redhat.com"
-              namespace: "CHANGEME"
-              buildConfigName: "CHANGEME"
+              namespace: "thoth-test-core"
+              buildConfigName: "package-update-job"
 
     kebechet-auto-gate:
       queue: "thoth-station/core"
       jobs:
         - "thoth-coala"
-        - "thoth-pytest"
