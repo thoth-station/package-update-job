@@ -33,7 +33,6 @@ def main():
     """Run package-update."""
     graph = GraphDatabase()
     graph.connect()
-    graph.initialize_schema()
 
     removed_pkgs = set()
 
