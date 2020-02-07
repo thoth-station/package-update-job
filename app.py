@@ -19,6 +19,7 @@
 
 from prometheus_client import CollectorRegistry, Gauge, Counter, push_to_gateway
 
+from thoth.common import init_logging
 from thoth.storages import GraphDatabase
 from thoth.python import Source
 
@@ -29,9 +30,9 @@ from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
 from messages.hash_mismatch import HashMismatchMessage
 
-_LOGGER = logging.getLogger(__name__)
+init_logging()
 
-logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+_LOGGER = logging.getLogger("thoth.package_update")
 
 prometheus_registry = CollectorRegistry()
 

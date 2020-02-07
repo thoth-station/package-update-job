@@ -26,7 +26,7 @@ import ssl
 
 import faust
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("thoth.package_update.messages")
 
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")

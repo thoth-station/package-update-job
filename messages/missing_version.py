@@ -28,7 +28,7 @@ import faust
 
 from .message_base import MessageBase
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("thoth.package_update.messages")
 
 
 class MissingVersionMessage(MessageBase):
