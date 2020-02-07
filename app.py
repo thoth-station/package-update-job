@@ -35,15 +35,6 @@ logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 
 prometheus_registry = CollectorRegistry()
 
-_THOTH_METRICS_PUSHGATEWAY_URL = os.getenv("PROMETHEUS_PUSHGATEWAY_URL")
-
-thoth_metrics_exporter_info = Gauge(
-    "graph_sync_job_info",
-    "Thoth Graph Sync Job information",
-    registry=prometheus_registry,
-)
-thoth_metrics_exporter_info.inc()
-
 _METRIC_MISSING_PACKAGE = Gauge(
     "package_update_missing_package",
     "Number of packages missing off of indexes.",
