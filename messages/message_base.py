@@ -24,12 +24,7 @@ import json
 import logging
 import ssl
 
-import kafka
 import faust
-
-from kafka import KafkaProducer
-from kafka.admin import KafkaAdminClient, NewTopic
-
 
 _LOGGER = logging.getLogger(__name__)
 
