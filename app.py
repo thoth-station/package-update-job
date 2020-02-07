@@ -23,6 +23,7 @@ from thoth.storages import GraphDatabase
 from thoth.python import Source
 
 import logging
+import os
 
 from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
@@ -39,10 +40,9 @@ _THOTH_METRICS_PUSHGATEWAY_URL = os.getenv("PROMETHEUS_PUSHGATEWAY_URL")
 thoth_metrics_exporter_info = Gauge(
     "graph_sync_job_info",
     "Thoth Graph Sync Job information",
-    ["version"],
     registry=prometheus_registry,
 )
-thoth_metrics_exporter_info.labels(__version__).inc()
+thoth_metrics_exporter_info.inc()
 
 _METRIC_MISSING_PACKAGE = Gauge(
     "package_update_missing_package",
@@ -87,7 +87,7 @@ def main():
         if not src.provides_package(pkg[0]):
             removed_pkgs.add(f"{pkg[1]}_{pkg[0]}")
             missing_package.publish_to_topic(missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0]))
-            _METRIC_MISSING_PACKAGE.inc(namespace=namespace)
+            _METRIC_MISSING_PACKAGE.labels(namespace=namespace).inc()
             _LOGGER.debug("%r no longer provides %r", pkg[1], pkg[0])
 
     all_pkg_vers = graph.get_python_package_versions_all()
@@ -105,7 +105,7 @@ def main():
                     index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]
                 )
             )
-            _METRIC_MISSING_VERSION.inc(namespace=namespace)
+            _METRIC_MISSING_VERSION.labels(namespace=namespace).inc()
             _LOGGER.debug("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
             continue
 
@@ -115,7 +115,7 @@ def main():
             hash_mismatch.publish_to_topic(
                 hash_mismatch.MessageContents(index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1])
             )
-            _METRIC_HASH_MISMATCH.inc(namespace=namespace)
+            _METRIC_HASH_MISMATCH.labels(namespace=namespace).inc()
             _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
 
 
