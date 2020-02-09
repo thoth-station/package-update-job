@@ -71,7 +71,9 @@ def main():
         stored_hashes = sorted(graph.get_python_package_hashes_sha256(pkg_ver[0], pkg_ver[1], pkg_ver[2]))
         if not source_hashes == stored_hashes:
             hash_mismatch.publish_to_topic(
-                hash_mismatch.MessageContents(index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]),
+                hash_mismatch.MessageContents(
+                    index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1],
+                ),
             )
             _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
 
