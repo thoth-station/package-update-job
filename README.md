@@ -38,8 +38,8 @@ your virtual environment:
 
   $ pipenv install  --dev # Install all the requirements
 
-After that, you need to run a local instance of database - follow 
-[instructions in the README](https://github.com/thoth-station/storages#running-postgresql-locally) file for 
+After that, you need to run a local instance of database - follow
+[instructions in the README](https://github.com/thoth-station/storages#running-postgresql-locally) file for
 more info and prepare the database schema:
 
   $ pipenv run python3 ./app.py

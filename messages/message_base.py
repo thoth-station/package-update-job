@@ -61,7 +61,7 @@ class MessageBase:
     ):
         """Create general message."""
         self.topic = self.app.topic(
-            topic_name, value_type=value_type, retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS, partitions=1, internal=True
+            topic_name, value_type=value_type, retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS, partitions=1, internal=True,
         )
 
     async def publish_to_topic(self, value):
