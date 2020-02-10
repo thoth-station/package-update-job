@@ -29,14 +29,14 @@ parameters:
     description: Suspend CronJob run
     required: true
     name: THOTH_SUSPEND_JOB
-    value: "true"
+    value: "false"
 
   - description: Project the ImageStream to be use lives in
     displayName: ImageStream Project
     required: true
     name: IMAGE_STREAM_NAMESPACE
     # TODO adjust ansible role so that we dont need a default here
-    value: "thoth-infra-stage"
+    value: "thoth-test-core"
 
   - description: Tag of the ImageStream to be use
     displayName: ImageStream Tag
