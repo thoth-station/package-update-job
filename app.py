@@ -40,8 +40,7 @@ removed_pkgs = set()
 def check_package_availability(pkg: tuple):
     src = Source(pkg[1])
     provides = src.provides_package(pkg[0])
-    print("availability check")
-    if provides:
+    if not provides:
         removed_pkgs.add(f"{pkg[1]}-{pkg[0]}")
         missing_package.publish_to_topic(missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0]))
         _LOGGER.debug("%r no longer provides %r", pkg[1], pkg[0])
@@ -82,7 +81,7 @@ def main():
 
     threads = []
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
         for pkg in all_pkgs:
             executor.submit(check_package_availability, pkg)
 
@@ -90,7 +89,7 @@ def main():
     all_pkg_vers_len = len(all_pkg_vers)
     _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_vers))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
         for pkg_ver in all_pkg_vers:
             executor.submit(check_python_package_version, pkg_ver, graph)
 
