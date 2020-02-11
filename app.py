@@ -19,7 +19,10 @@
 
 from thoth.storages import GraphDatabase
 from thoth.python import Source
+
 import logging
+import concurrent.futures
+
 from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
 from messages.hash_mismatch import HashMismatchMessage
@@ -28,53 +31,68 @@ _LOGGER = logging.getLogger(__name__)
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 
+hash_mismatch = HashMismatchMessage()
+missing_package = MissingPackageMessage()
+missing_version = MissingVersionMessage()
+
+removed_pkgs = set()
+
+def check_package_availability(pkg: tuple):
+    src = Source(pkg[1])
+    provides = src.provides_package(pkg[0])
+    print("availability check")
+    if provides:
+        removed_pkgs.add(f"{pkg[1]}-{pkg[0]}")
+        missing_package.publish_to_topic(missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0]))
+        _LOGGER.debug("%r no longer provides %r", pkg[1], pkg[0])
+
+
+def check_python_package_version(pkg_ver: tuple, graph: GraphDatabase):
+    # Skip because we have already marked the entire package as missing
+    if f"{pkg_ver[2]}-{pkg_ver[0]}" in removed_pkgs:
+        return
+
+    src = Source(pkg_ver[2])
+    if not src.provides_package_version(pkg_ver[0], pkg_ver[1]):
+        missing_version.publish_to_topic(
+            missing_version.MessageContents(
+                index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]
+            )
+        )
+        _LOGGER.debug("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
+        return
+
+    source_hashes = sorted([i["sha256"] for i in src.get_package_hashes(pkg_ver[0], pkg_ver[1])])
+    stored_hashes = sorted(graph.get_python_package_hashes_sha256(pkg_ver[0], pkg_ver[1], pkg_ver[2]))
+    if not source_hashes == stored_hashes:
+        hash_mismatch.publish_to_topic(
+            hash_mismatch.MessageContents(index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1])
+        )
+        _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
 
 def main():
     """Run package-update."""
     graph = GraphDatabase()
     graph.connect()
 
-    removed_pkgs = set()
+    all_pkgs = graph.get_python_packages_all(count=9999999999999, distinct=True)
+    all_pkgs_len = len(all_pkgs)
 
-    hash_mismatch = HashMismatchMessage()
-    missing_package = MissingPackageMessage()
-    missing_version = MissingVersionMessage()
+    _LOGGER.info("Checking availability of %r package(s)", all_pkgs_len)
 
-    all_pkgs = graph.get_python_packages_all()
-    _LOGGER.info("Checking availability of %r package(s)", len(all_pkgs))
-    for pkg in all_pkgs:
-        src = Source(pkg[1])
-        if not src.provides_package(pkg[0]):
-            removed_pkgs.add(f"{pkg[1]}_{pkg[0]}")
-            missing_package.publish_to_topic(missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0]))
-            _LOGGER.debug("%r no longer provides %r", pkg[1], pkg[0])
+    threads = []
 
-    all_pkg_vers = graph.get_python_package_versions_all()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        for pkg in all_pkgs:
+            executor.submit(check_package_availability, pkg)
+
+    all_pkg_vers = graph.get_python_package_versions_all(count=99999999999, distinct=True)
+    all_pkg_vers_len = len(all_pkg_vers)
     _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_vers))
-    for pkg_ver in all_pkg_vers:
 
-        # Skip because we have already marked the entire package as missing
-        if f"{pkg_ver[2]}-{pkg_ver[0]}" in removed_pkgs:
-            continue
-
-        src = Source(pkg_ver[2])
-        if not src.provides_package_version(pkg_ver[0], pkg_ver[1]):
-            missing_version.publish_to_topic(
-                missing_version.MessageContents(
-                    index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]
-                )
-            )
-            _LOGGER.debug("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
-            continue
-
-        source_hashes = sorted([i["sha256"] for i in src.get_package_hashes(pkg_ver[0], pkg_ver[1])])
-        stored_hashes = sorted(graph.get_python_package_hashes_sha256(pkg_ver[0], pkg_ver[1], pkg_ver[2]))
-        if not source_hashes == stored_hashes:
-            hash_mismatch.publish_to_topic(
-                hash_mismatch.MessageContents(index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1])
-            )
-            _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
-
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        for pkg_ver in all_pkg_vers:
+            executor.submit(check_python_package_version, pkg_ver, graph)
 
 if __name__ == "__main__":
     main()
