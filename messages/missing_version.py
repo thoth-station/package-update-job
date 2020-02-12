@@ -30,13 +30,11 @@ from .message_base import MessageBase
 
 _LOGGER = logging.getLogger(__name__)
 
-MISSING_VERSION_TOPIC = "missing-package-version"
-
 
 class MissingVersionMessage(MessageBase):
     """Class used for Package Release events on Kafka topic."""
 
-    topic_name = "missing-package-version"
+    topic_name = "thoth.package-update.missing-package-version"
 
     class MessageContents(faust.Record, serializer="json"):
         """Class used to represent a contents of a missing-package message Kafka topic."""

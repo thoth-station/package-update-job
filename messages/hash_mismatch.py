@@ -33,7 +33,7 @@ _LOGGER = logging.getLogger(__name__)
 class HashMismatchMessage(MessageBase):
     """Class used for Package Release events on Kafka topic."""
 
-    topic_name = "hash-mismatch"
+    topic_name = "thoth.package-update.hash-mismatch"
 
     class MessageContents(faust.Record, serializer="json"):
         """Class used to represent a contents of a missing-package message Kafka topic."""

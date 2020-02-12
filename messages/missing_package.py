@@ -33,7 +33,7 @@ _LOGGER = logging.getLogger(__name__)
 class MissingPackageMessage(MessageBase):
     """Class used for Package Release events on Kafka topic."""
 
-    topic_name = "missing-package"
+    topic_name = "thoth.package-update.missing-package"
 
     class MessageContents(faust.Record, serializer="json"):
         """Class used to represent a contents of a missing-package message Kafka topic."""

@@ -35,7 +35,7 @@ KAFKA_CLIENT_ID = os.getenv("KAFKA_CLIENT_ID", "thoth-messaging")
 KAFKA_PROTOCOL = os.getenv("KAFKA_PROTOCOL", "SSL")
 KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
 
-MESSAGE_BASE_TOPIC = "base-topic"
+MESSAGE_BASE_TOPIC = "thoth.base-topic"
 
 
 class MessageBase:
