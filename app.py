@@ -40,7 +40,7 @@ def main():
     missing_package = MissingPackageMessage()
     missing_version = MissingVersionMessage()
 
-    all_pkgs = graph.get_python_packages_all(count=None)
+    all_pkgs = graph.get_python_packages_all(count=None, distinct=True)
     _LOGGER.info("Checking availability of %r package(s)", len(all_pkgs))
     for pkg in all_pkgs:
         src = Source(pkg[1])
@@ -49,7 +49,7 @@ def main():
             missing_package.publish_to_topic(missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0]))
             _LOGGER.debug("%r no longer provides %r", pkg[1], pkg[0])
 
-    all_pkg_vers = graph.get_python_package_versions_all(count=None)
+    all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
     _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_vers))
     for pkg_ver in all_pkg_vers:
 
