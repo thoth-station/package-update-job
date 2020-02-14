@@ -9,6 +9,7 @@ verify_ssl = true
 thoth-python = "*"
 thoth-storages = "*"
 faust = "*"
+aiomonitor = "*"
 
 [requires]
 python_version = "3.6"

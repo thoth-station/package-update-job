@@ -19,17 +19,33 @@
 
 from thoth.storages import GraphDatabase
 from thoth.python import Source
+
+import asyncio
 import logging
+import faust
+import os
+import ssl
+
 from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
 from messages.hash_mismatch import HashMismatchMessage
 
 _LOGGER = logging.getLogger(__name__)
 
+
+_KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+_KAFKA_CAFILE = os.getenv("KAFKA_CAFILE", "ca.crt")
+KAFKA_CLIENT_ID = os.getenv("KAFKA_CLIENT_ID", "thoth-messaging")
+KAFKA_PROTOCOL = os.getenv("KAFKA_PROTOCOL", "SSL")
+KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
+
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=_KAFKA_CAFILE)
+app = faust.App("thoth-messaging", broker=_KAFKA_BOOTSTRAP_SERVERS, ssl_context=ssl_context, web_enabled=False)
 
 
-def main():
+@app.command()
+async def main():
     """Run package-update."""
     graph = GraphDatabase()
     graph.connect()
@@ -41,16 +57,22 @@ def main():
     missing_version = MissingVersionMessage()
 
     all_pkgs = graph.get_python_packages_all(count=None, distinct=True)
-    _LOGGER.info("Checking availability of %r package(s)", len(all_pkgs))
+    app.log.info("Checking availability of %r package(s)", len(all_pkgs))
     for pkg in all_pkgs:
         src = Source(pkg[1])
         if not src.provides_package(pkg[0]):
             removed_pkgs.add(f"{pkg[1]}_{pkg[0]}")
-            missing_package.publish_to_topic(missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0]))
-            _LOGGER.debug("%r no longer provides %r", pkg[1], pkg[0])
+            try:
+                await missing_package.publish_to_topic(missing_package.MessageContents(
+                    index_url=pkg[1],
+                    package_name=pkg[0],
+                ))
+                app.log.debug("%r no longer provides %r", pkg[1], pkg[0])
+            except Exception as identifier:
+                app.log.debug("Failed to publish with the following error message: %r", identifier.msg)
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
-    _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_vers))
+    app.log.info("Checking integrity of %r package(s)", len(all_pkg_vers))
     for pkg_ver in all_pkg_vers:
 
         # Skip because we have already marked the entire package as missing
@@ -59,22 +81,36 @@ def main():
 
         src = Source(pkg_ver[2])
         if not src.provides_package_version(pkg_ver[0], pkg_ver[1]):
-            missing_version.publish_to_topic(
-                missing_version.MessageContents(
-                    index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]
+
+            try:
+                await missing_version.publish_to_topic(
+                    missing_version.MessageContents(
+                        index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]
+                    )
                 )
-            )
-            _LOGGER.debug("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
+                app.log.debug("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
+            except Exception as identifier:
+                app.log.debug("Failed to publish with the following error message: %r", identifier.msg)
+
             continue
 
         source_hashes = sorted([i["sha256"] for i in src.get_package_hashes(pkg_ver[0], pkg_ver[1])])
         stored_hashes = sorted(graph.get_python_package_hashes_sha256(pkg_ver[0], pkg_ver[1], pkg_ver[2]))
         if not source_hashes == stored_hashes:
-            hash_mismatch.publish_to_topic(
-                hash_mismatch.MessageContents(index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1])
-            )
-            _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
+            try:
+                await hash_mismatch.publish_to_topic(
+                    hash_mismatch.MessageContents(
+                        index_url=pkg_ver[2],
+                        package_name=pkg_ver[0],
+                        package_version=pkg_ver[1],
+                    )
+                )
+                app.log.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
+            except Exception as identifier:
+                app.log.debug("Failed to publish with the following error message: %r", identifier.msg)
 
 
 if __name__ == "__main__":
-    main()
+    app.main()
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(main())
