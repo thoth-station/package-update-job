@@ -18,6 +18,7 @@
 """This is run periodically to ensure integrity of Python Packages stored in the database."""
 
 from thoth.storages import GraphDatabase
+from thoth.python import AIOSource
 from thoth.python import Source
 
 import asyncio
@@ -56,11 +57,20 @@ async def main():
     missing_package = MissingPackageMessage()
     missing_version = MissingVersionMessage()
 
+    indexes = [x["url"] for x in graph.get_python_package_index_all()]
+    sources = dict()
+    for i in indexes:
+        sources[i] = dict()
+        sources[i]["source"] = AIOSource(i)
+        sources[i]["packages"] = await sources[i]["source"].get_packages()
+        sources[i]["packages"] = sources[i]["packages"].packages
+        print(sources[i]["packages"])
+
     all_pkgs = graph.get_python_packages_all(count=None, distinct=True)
     app.log.info("Checking availability of %r package(s)", len(all_pkgs))
     for pkg in all_pkgs:
-        src = Source(pkg[1])
-        if not src.provides_package(pkg[0]):
+        src = sources[pkg[1]]
+        if not pkg[0] in src["packages"]:
             removed_pkgs.add(f"{pkg[1]}_{pkg[0]}")
             try:
                 await missing_package.publish_to_topic(missing_package.MessageContents(
@@ -68,8 +78,8 @@ async def main():
                     package_name=pkg[0],
                 ))
                 app.log.debug("%r no longer provides %r", pkg[1], pkg[0])
-            except Exception as identifier:
-                app.log.debug("Failed to publish with the following error message: %r", identifier.msg)
+            except Exception as e:
+                app.log.debug("Failed to publish with the following error message: %r", e)
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
     app.log.info("Checking integrity of %r package(s)", len(all_pkg_vers))
@@ -79,8 +89,9 @@ async def main():
         if f"{pkg_ver[2]}-{pkg_ver[0]}" in removed_pkgs:
             continue
 
-        src = Source(pkg_ver[2])
-        if not src.provides_package_version(pkg_ver[0], pkg_ver[1]):
+        src = sources[pkg_ver[2]]["source"]
+        package_versions = await src.get_package_versions(pkg_ver[0])
+        if not pkg_ver[1] in package_versions.versions:
 
             try:
                 await missing_version.publish_to_topic(
@@ -94,7 +105,7 @@ async def main():
 
             continue
 
-        source_hashes = sorted([i["sha256"] for i in src.get_package_hashes(pkg_ver[0], pkg_ver[1])])
+        source_hashes = sorted([i["sha256"] for i in await src.get_package_hashes(pkg_ver[0], pkg_ver[1])])
         stored_hashes = sorted(graph.get_python_package_hashes_sha256(pkg_ver[0], pkg_ver[1], pkg_ver[2]))
         if not source_hashes == stored_hashes:
             try:
