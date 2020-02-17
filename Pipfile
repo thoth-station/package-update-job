@@ -9,6 +9,7 @@ verify_ssl = true
 thoth-python = "*"
 thoth-storages = "*"
 faust = "*"
+prometheus-client = "*"
 
 [requires]
 python_version = "3.6"
