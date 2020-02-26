@@ -75,7 +75,7 @@ def main():
     for pkg in all_pkgs:
         src = Source(pkg[1])
         if not src.provides_package(pkg[0]):
-            removed_pkgs.add(f"{pkg[1]}_{pkg[0]}")
+            removed_pkgs.add((pkg[1], pkg[0]))
             missing_package.publish_to_topic(missing_package.MessageContents(index_url=pkg[1], package_name=pkg[0]))
             _METRIC_MISSING_PACKAGE.labels(namespace=namespace).inc()
             _LOGGER.debug("%r no longer provides %r", pkg[1], pkg[0])
@@ -85,7 +85,7 @@ def main():
     for pkg_ver in all_pkg_vers:
 
         # Skip because we have already marked the entire package as missing
-        if f"{pkg_ver[2]}-{pkg_ver[0]}" in removed_pkgs:
+        if (pkg_ver[2], pkg_ver[0]) in removed_pkgs:
             continue
 
         src = Source(pkg_ver[2])
