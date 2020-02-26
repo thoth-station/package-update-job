@@ -4,4 +4,8 @@
 # command
 #
 
-exec faust --debug --loglevel debug -A package_update main
+if [ "$SUBCOMMAND" = "producer" ]
+    exec faust --debug --loglevel debug -A package_update main
+elif [ "$SUBCOMMAND" = "consumer"]
+    exec faust --debug --loglevel debug -A update_consumer worker
+fi
