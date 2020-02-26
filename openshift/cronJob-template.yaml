@@ -44,6 +44,12 @@ parameters:
     name: IMAGE_STREAM_TAG
     value: "latest"
 
+  - description: Subcommand to be run
+    displayName: Subcommand
+    required: true
+    name: SUBCOMMAND
+    value: "producer"
+
 objects:
   - kind: CronJob
     apiVersion: batch/v1beta1
@@ -73,6 +79,10 @@ objects:
                 - image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/package-update-job:${IMAGE_STREAM_TAG}"
                   name: package-update
                   env:
+                    - name: SUBCOMMAND
+                      value: ${{SUBCOMMAND}}
+                    - name: APP_SCRIPT
+                      value: "app.sh"
                     - name: KAFKA_BOOTSTRAP_SERVERS
                       value: "stage-kafka-bootstrap-dh-stage-message-bus.cloud.paas.stage.psi.redhat.com:443"
                     - name: KAFKA_CAFILE
