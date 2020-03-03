@@ -20,6 +20,7 @@
 from thoth.storages import GraphDatabase
 from thoth.python import AIOSource
 from thoth.python import Source
+from prometheus_client import CollectorRegistry, Gauge, Counter, push_to_gateway
 
 import asyncio
 import logging
@@ -33,16 +34,38 @@ from messages.hash_mismatch import HashMismatchMessage
 
 _LOGGER = logging.getLogger(__name__)
 
-
 _KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 _KAFKA_CAFILE = os.getenv("KAFKA_CAFILE", "ca.crt")
 KAFKA_CLIENT_ID = os.getenv("KAFKA_CLIENT_ID", "thoth-messaging")
 KAFKA_PROTOCOL = os.getenv("KAFKA_PROTOCOL", "SSL")
 KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
-
-logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=_KAFKA_CAFILE)
 app = faust.App("thoth-messaging", broker=_KAFKA_BOOTSTRAP_SERVERS, ssl_context=ssl_context, web_enabled=False)
+
+prometheus_registry = CollectorRegistry()
+
+_METRIC_MISSING_PACKAGE = Gauge(
+    "package_update_missing_package",
+    "Number of packages missing off of indexes.",
+    ["namespace"],
+    registry=prometheus_registry,
+)
+
+_METRIC_MISSING_VERSION = Gauge(
+    "package_update_missing_version",
+    "Number of individual versions messing off indexes.",
+    ["namespace"],
+    registry=prometheus_registry,
+)
+
+_METRIC_HASH_MISMATCH = Gauge(
+    "package_update_hash_mismatch",
+    "Number of package hash mismatches.",
+    ["namespace"],
+    registry=prometheus_registry,
+)
+
+namespace = os.getenv("THOTH_NAMESPACE")
 
 
 @app.command()
@@ -64,7 +87,6 @@ async def main():
         sources[i]["source"] = AIOSource(i)
         sources[i]["packages"] = await sources[i]["source"].get_packages()
         sources[i]["packages"] = sources[i]["packages"].packages
-        print(sources[i]["packages"])
 
     all_pkgs = graph.get_python_packages_all(count=None, distinct=True)
     app.log.info("Checking availability of %r package(s)", len(all_pkgs))
@@ -77,6 +99,7 @@ async def main():
                     index_url=pkg[1],
                     package_name=pkg[0],
                 ))
+                _METRIC_MISSING_PACKAGE.labels(namespace=namespace).inc()
                 app.log.debug("%r no longer provides %r", pkg[1], pkg[0])
             except Exception as e:
                 app.log.debug("Failed to publish with the following error message: %r", e)
@@ -99,6 +122,7 @@ async def main():
                         index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]
                     )
                 )
+                _METRIC_MISSING_VERSION.labels(namespace=namespace).inc()
                 app.log.debug("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
             except Exception as identifier:
                 app.log.debug("Failed to publish with the following error message: %r", identifier.msg)
@@ -116,6 +140,7 @@ async def main():
                         package_version=pkg_ver[1],
                     )
                 )
+                _METRIC_HASH_MISMATCH.labels(namespace=namespace).inc()
                 app.log.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
             except Exception as identifier:
                 app.log.debug("Failed to publish with the following error message: %r", identifier.msg)
@@ -123,5 +148,3 @@ async def main():
 
 if __name__ == "__main__":
     app.main()
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(main())
