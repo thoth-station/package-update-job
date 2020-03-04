@@ -22,8 +22,6 @@ from thoth.python import AIOSource
 from thoth.python import Source
 from thoth.common import init_logging
 
-from prometheus_client import CollectorRegistry, Gauge, Counter, push_to_gateway
-
 import asyncio
 import logging
 import faust
@@ -46,39 +44,12 @@ KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
 ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=_KAFKA_CAFILE)
 app = faust.App("thoth-messaging", broker=_KAFKA_BOOTSTRAP_SERVERS, ssl_context=ssl_context, web_enabled=False)
 
-prometheus_registry = CollectorRegistry()
-
-_METRIC_MISSING_PACKAGE = Gauge(
-    "package_update_missing_package",
-    "Number of packages missing off of indexes.",
-    ["namespace"],
-    registry=prometheus_registry,
-)
-
-_METRIC_MISSING_VERSION = Gauge(
-    "package_update_missing_version",
-    "Number of individual versions messing off indexes.",
-    ["namespace"],
-    registry=prometheus_registry,
-)
-
-_METRIC_HASH_MISMATCH = Gauge(
-    "package_update_hash_mismatch",
-    "Number of package hash mismatches.",
-    ["namespace"],
-    registry=prometheus_registry,
-)
-
 namespace = os.getenv("THOTH_NAMESPACE")
 
 
 @app.command()
 async def main():
     """Run package-update."""
-
-    for i in range(0, 20):
-        _LOGGER.info("Thoth Logging WORKS!")
-    
     graph = GraphDatabase()
     graph.connect()
 
@@ -107,7 +78,6 @@ async def main():
                     index_url=pkg[1],
                     package_name=pkg[0],
                 ))
-                _METRIC_MISSING_PACKAGE.labels(namespace=namespace).inc()
                 _LOGGER.info("%r no longer provides %r", pkg[1], pkg[0])
             except Exception as e:
                 _LOGGER.exception("Failed to publish with the following error message: %r", e)
@@ -130,7 +100,6 @@ async def main():
                         index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]
                     )
                 )
-                _METRIC_MISSING_VERSION.labels(namespace=namespace).inc()
                 _LOGGER.info("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
             except Exception as identifier:
                 _LOGGER.exception("Failed to publish with the following error message: %r", identifier.msg)
@@ -150,7 +119,6 @@ async def main():
                         missing_from_database=list(source_hashes-stored_hashes),
                     )
                 )
-                _METRIC_HASH_MISMATCH.labels(namespace=namespace).inc()
                 _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
             except Exception as identifier:
                 _LOGGER.exception("Failed to publish with the following error message: %r", identifier.msg)
