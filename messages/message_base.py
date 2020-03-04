@@ -66,4 +66,4 @@ class MessageBase:
 
     async def publish_to_topic(self, value):
         """Publish to this messages topic."""
-        self.topic.send(value=value)
+        await self.topic.send(value=value)

@@ -20,6 +20,8 @@
 from thoth.storages import GraphDatabase
 from thoth.python import AIOSource
 from thoth.python import Source
+from thoth.common import init_logging
+
 from prometheus_client import CollectorRegistry, Gauge, Counter, push_to_gateway
 
 import asyncio
@@ -32,7 +34,9 @@ from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
 from messages.hash_mismatch import HashMismatchMessage
 
-_LOGGER = logging.getLogger(__name__)
+init_logging()
+
+_LOGGER = logging.getLogger("thoth.package_update")
 
 _KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 _KAFKA_CAFILE = os.getenv("KAFKA_CAFILE", "ca.crt")
@@ -71,6 +75,10 @@ namespace = os.getenv("THOTH_NAMESPACE")
 @app.command()
 async def main():
     """Run package-update."""
+
+    for i in range(0, 20):
+        _LOGGER.info("Thoth Logging WORKS!")
+    
     graph = GraphDatabase()
     graph.connect()
 
@@ -89,7 +97,7 @@ async def main():
         sources[i]["packages"] = sources[i]["packages"].packages
 
     all_pkgs = graph.get_python_packages_all(count=None, distinct=True)
-    app.log.info("Checking availability of %r package(s)", len(all_pkgs))
+    _LOGGER.info("Checking availability of %r package(s)", len(all_pkgs))
     for pkg in all_pkgs:
         src = sources[pkg[1]]
         if not pkg[0] in src["packages"]:
@@ -100,12 +108,12 @@ async def main():
                     package_name=pkg[0],
                 ))
                 _METRIC_MISSING_PACKAGE.labels(namespace=namespace).inc()
-                app.log.info("%r no longer provides %r", pkg[1], pkg[0])
+                _LOGGER.info("%r no longer provides %r", pkg[1], pkg[0])
             except Exception as e:
-                app.log.exception("Failed to publish with the following error message: %r", e)
+                _LOGGER.exception("Failed to publish with the following error message: %r", e)
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
-    app.log.info("Checking integrity of %r package(s)", len(all_pkg_vers))
+    _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_vers))
     for pkg_ver in all_pkg_vers:
 
         # Skip because we have already marked the entire package as missing
@@ -123,9 +131,9 @@ async def main():
                     )
                 )
                 _METRIC_MISSING_VERSION.labels(namespace=namespace).inc()
-                app.log.info("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
+                _LOGGER.info("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
             except Exception as identifier:
-                app.log.exception("Failed to publish with the following error message: %r", identifier.msg)
+                _LOGGER.exception("Failed to publish with the following error message: %r", identifier.msg)
 
             continue
 
@@ -138,14 +146,14 @@ async def main():
                         index_url=pkg_ver[2],
                         package_name=pkg_ver[0],
                         package_version=pkg_ver[1],
-                        missing_from_source=list(stored_hashes-source_hashes)
-                        missing_from_database=list(source_hashes-stored_hashes)
+                        missing_from_source=list(stored_hashes-source_hashes),
+                        missing_from_database=list(source_hashes-stored_hashes),
                     )
                 )
                 _METRIC_HASH_MISMATCH.labels(namespace=namespace).inc()
-                app.log.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
+                _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
             except Exception as identifier:
-                app.log.exception("Failed to publish with the following error message: %r", identifier.msg)
+                _LOGGER.exception("Failed to publish with the following error message: %r", identifier.msg)
 
 
 if __name__ == "__main__":
