@@ -11,6 +11,7 @@ thoth-storages = "*"
 faust = "*"
 aiomonitor = "*"
 prometheus-client = "*"
+thoth-sourcemanagement = "*"
 
 [requires]
 python_version = "3.6"
