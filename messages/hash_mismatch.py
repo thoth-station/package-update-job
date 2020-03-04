@@ -22,6 +22,7 @@
 import os
 import json
 import logging
+from typing import List
 
 import faust
 
@@ -41,6 +42,8 @@ class HashMismatchMessage(MessageBase):
         index_url: str
         package_name: str
         package_version: str
+        missing_from_source: List[str]
+        missing_from_database: List[str]
 
     def __init__(self, num_partitions: int = 1, replication_factor: int = 1):
         """Initialize hash-mismatch topic."""
