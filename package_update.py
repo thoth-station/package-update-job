@@ -59,7 +59,7 @@ async def main():
     missing_package = MissingPackageMessage()
     missing_version = MissingVersionMessage()
 
-    indexes = set([x["url"] for x in graph.get_python_package_index_all()])
+    indexes = {x["url"] for x in graph.get_python_package_index_all()}
     sources = dict()
     for i in indexes:
         sources[i] = dict()
@@ -106,7 +106,7 @@ async def main():
 
             continue
 
-        source_hashes = set([i["sha256"] for i in await src.get_package_hashes(pkg_ver[0], pkg_ver[1])])
+        source_hashes = {i["sha256"] for i in await src.get_package_hashes(pkg_ver[0], pkg_ver[1])}
         stored_hashes = set(graph.get_python_package_hashes_sha256(pkg_ver[0], pkg_ver[1], pkg_ver[2]))
         if not source_hashes == stored_hashes:
             try:
