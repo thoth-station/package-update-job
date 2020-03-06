@@ -64,6 +64,6 @@ class MessageBase:
             topic_name, value_type=value_type, retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS, partitions=1, internal=True
         )
 
-    async def publish_to_topic(self, value):
+    def publish_to_topic(self, value):
         """Publish to this messages topic."""
-        await self.topic.send(value=value)
+        self.topic.send(value=value)

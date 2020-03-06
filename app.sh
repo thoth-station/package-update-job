@@ -4,7 +4,6 @@
 # command
 #
 
-if [ "$SUBCOMMAND" = "producer" ]
-then
+if [ "$SUBCOMMAND" = "producer"]
     exec faust --debug --loglevel debug -A package_update main
 fi
