@@ -61,7 +61,7 @@ missing_version_process_runtime = Gauge(
     ["thoth", "package-update"],
 )
 
-def measure_function_time(gauge: Gauge)
+def gauge_function_time(gauge: Gauge)
     def measure_function_time(func):
         def inner_func1():
             start = time.time()
@@ -88,7 +88,7 @@ def git_source_from_url(url: str) -> SourceManagement:
         raise NotImplementedError("There is no token for this service type")
     return SourceManagement(service_type, res.scheme + "://" + res.netloc, token, res.path)
 
-@measure_function_time(hash_mismatch_process_runtime)
+@gauge_function_time(hash_mismatch_process_runtime)
 def process_mismatch(mismatch):
     try:
         analysis_id = _OPENSHIFT.schedule_all_solvers(
@@ -119,7 +119,7 @@ def process_mismatch(mismatch):
         gitservice_repo = git_source_from_url(repo)
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
 
-@measure_function_time(missing_package_process_runtime)
+@gauge_function_time(missing_package_process_runtime)
 def process_missing_package(package):
     repostiories = graph.get_all_repositories_using_package(
         index_url=package.index_url,
@@ -133,7 +133,7 @@ def process_missing_package(package):
         gitservice_repo = git_source_from_url(repo)
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
 
-@measure_function_time(missing_version_process_runtime)
+@gauge_function_time(missing_version_process_runtime)
 def process_missing_version(version):
     graph.update_missing_flag_package_version(
         index_url=version.index_url,
