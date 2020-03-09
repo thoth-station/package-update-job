@@ -1,11 +1,10 @@
-
+from thoth.common import init_logging, OpenShift
 from thoth.storages import GraphDatabase
 from thoth.python import AIOSource
 from thoth.python import Source
-from thoth.common import _OPENSHIFT, init_logging
 from thoth.sourcemanagement.sourcemanagement import SourceManagement
 from thoth.sourcemanagement.enums import ServiceType
-from time import time
+
 
 from prometheus_client import start_http_server, Counter, Gauge
 
@@ -15,6 +14,7 @@ import faust
 import os
 import ssl
 from urllib.parse import urlparse
+from time import time
 
 from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
@@ -41,27 +41,28 @@ GITLAB_PRIVATE_TOKEN = os.getenv(
     "THOTH_GITLAB_PRIVATE_TOKEN", None
 )
 
-
+_OPENSHIFT = OpenShift()
 graph = GraphDatabase()
 graph.connect()
 
 missing_package_process_runtime = Gauge(
-    "thoth_package-update_missing_package_runtime",
+    "thoth_package_update_missing_package_runtime",
     "Time to process missing package message.",
-    ["thoth", "package-update"],
+    ["thoth", "package_update"],
 )
 hash_mismatch_process_runtime = Gauge(
-    "thoth_package-update_hashmismatch_runtime",
+    "thoth_package_update_hashmismatch_runtime",
     "Time to process hash mismatch message.",
-    ["thoth", "package-update"],
+    ["thoth", "package_update"],
 )
 missing_version_process_runtime = Gauge(
-    "thoth_package-update_missing_version_runtime",
+    "thoth_package_update_missing_version_runtime",
     "Time to process missing version message.",
-    ["thoth", "package-update"],
+    ["thoth", "package_update"],
 )
 
-def gauge_function_time(gauge: Gauge)
+
+def gauge_function_time(gauge: Gauge):
     def measure_function_time(func):
         def inner_func1():
             start = time.time()
@@ -80,9 +81,9 @@ def git_source_from_url(url: str) -> SourceManagement:
     service_url = res.netloc
     service_name = service_url.split('.')[-2]     # all urls should look something like x.x.github.com
     s_type = ServiceType.by_name(service_name)
-    if s_type = ServiceType.GITHUB:
+    if s_type == ServiceType.GITHUB:
         token = GITHUB_PRIVATE_TOKEN
-    elif s_type = ServiceType.GITLAB:
+    elif s_type == ServiceType.GITLAB:
         token = GITLAB_PRIVATE_TOKEN
     else:
         raise NotImplementedError("There is no token for this service type")

@@ -26,28 +26,51 @@ _KAFKA_CAFILE = os.getenv("KAFKA_CAFILE", "ca.crt")
 KAFKA_CLIENT_ID = os.getenv("KAFKA_CLIENT_ID", "thoth-messaging")
 KAFKA_PROTOCOL = os.getenv("KAFKA_PROTOCOL", "SSL")
 KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
-)
 
 ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=_KAFKA_CAFILE)
 app = faust.App("thoth-messaging", broker=_KAFKA_BOOTSTRAP_SERVERS, ssl_context=ssl_context, web_enabled=False)
 
-start_http_server(8000, addr="/metrics")
+# start_http_server(8000, addr="/metrics")
 # TODO: query prometheus scraper and get or create values for all metrics for now we will set them all to 0
 # NOTE: these counters are temp metrics as they are already exposed by Kafka
 hash_mismatch_counter = Counter(
-    "thoth_package-update_hashmismatch_total",
+    "thoth_package_update_hashmismatch_total",
     "Total number of hashmismatches found.",
-    ["thoth", "package-update"],
+    ["thoth", "package_update"],
 )
 missing_package_counter = Counter(
-    "thoth_package-update_missingpackage_total",
+    "thoth_package_update_missingpackage_total",
     "Total number of hashmismatches found.",
-    ["thoth", "package-update"],
+    ["thoth", "package_update"],
 )
 missing_package_version_counter = Counter(
-    "thoth_package-update_missingversion_total",
+    "thoth_package_update_missingversion_total",
     "Total number of hashmismatches found.",
-    ["thoth", "package-update"],
+    ["thoth", "package_update"],
+)
+
+hash_mismatch_topic = app.topic(
+    HashMismatchMessage.topic_name,
+    value_type=HashMismatchMessage.MessageContents,
+    retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS,
+    partitions=1,
+    internal=True,
+)
+
+missing_package_topic = app.topic(
+    MissingPackageMessage.topic_name,
+    value_type=MissingPackageMessage.MessageContents,
+    retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS,
+    partitions=1,
+    internal=True,
+)
+
+missing_version_topic = app.topic(
+    MissingVersionMessage.topic_name,
+    value_type=MissingVersionMessage.MessageContents,
+    retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS,
+    partitions=1,
+    internal=True,
 )
 
 # TODO: for storages we need the following functions:
