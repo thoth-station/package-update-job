@@ -16,6 +16,8 @@ from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
 from messages.hash_mismatch import HashMismatchMessage
 
+"""Consume messages produced by package-update.py faust app."""
+
 init_logging()
 
 _LOGGER = logging.getLogger("thoth.package_update")
@@ -91,6 +93,7 @@ async def consume_hash_mismatch(hash_mismatches):
         # Where A, B, C are all solvers and D is a container which warns all users of change
         process_mismatch(mismatch)
 
+
 @app.agent(missing_package_topic)
 async def consume_missing_package(missing_packages):
     """Dump the messages received."""
@@ -100,6 +103,7 @@ async def consume_missing_package(missing_packages):
 
         # TODO: open issue if package is a direct dependency of the user, otherwise rerun thamos-advise/kebechet
         process_missing_package(package)
+
 
 @app.agent(missing_version_topic)
 async def consume_missing_version(missing_versions):

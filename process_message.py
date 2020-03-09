@@ -61,21 +61,25 @@ missing_version_process_runtime = Gauge(
     ["thoth", "package_update"],
 )
 
+"""Process message for update_consumer."""
+
 
 def gauge_function_time(gauge: Gauge):
+    """Wrapper which uses a defined Gauge to post a metric about function execution time."""
     def measure_function_time(func):
         def inner_func1():
             start = time.time()
             func(*args, *kwargs)
             end = time.time()
             gauge.set(end - start)
-        
+
         return inner_func1
     return measure_function_time
 
 
 # NOTE: This could be moved to thoth-sourcemanagement
 def git_source_from_url(url: str) -> SourceManagement:
+    """Parse URL to get SourceManagement object."""
     res = urlparse(url)
     path = res.path.split('/')
     service_url = res.netloc
@@ -89,8 +93,10 @@ def git_source_from_url(url: str) -> SourceManagement:
         raise NotImplementedError("There is no token for this service type")
     return SourceManagement(service_type, res.scheme + "://" + res.netloc, token, res.path)
 
+
 @gauge_function_time(hash_mismatch_process_runtime)
 def process_mismatch(mismatch):
+    """Process a hash mismatch message from package-update producer."""
     try:
         analysis_id = _OPENSHIFT.schedule_all_solvers(
             packages=f"{mismatch.package_name}==={mismatch.package_version}",
@@ -114,28 +120,32 @@ def process_mismatch(mismatch):
     )
 
     issue_title = f"Hash mismatch for {mismatch.package_name}=={mismatch.package_version} on {mismatch.index_url}"
-    issue_body = lambda: "Automated message from package change detected by thoth.package-update"
+    def issue_body(): return "Automated message from package change detected by thoth.package-update"
 
     for repo in repositories:
         gitservice_repo = git_source_from_url(repo)
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
 
+
 @gauge_function_time(missing_package_process_runtime)
 def process_missing_package(package):
+    """Process a missing package message from package-update producer."""
     repostiories = graph.get_all_repositories_using_package(
         index_url=package.index_url,
         package_name=package.package_name
     )
 
     issue_title = f"Missing package {package.package_name} on {package.index_url}"
-    issue_body = lambda: "Automated message from package change detected by thoth.package-update"
+    def issue_body(): return "Automated message from package change detected by thoth.package-update"
 
     for repo in repositories:
         gitservice_repo = git_source_from_url(repo)
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
 
+
 @gauge_function_time(missing_version_process_runtime)
 def process_missing_version(version):
+    """Process a missing version message from package-update producer."""
     graph.update_missing_flag_package_version(
         index_url=version.index_url,
         package_name=version.package_name,
