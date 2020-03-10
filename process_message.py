@@ -77,13 +77,12 @@ def gauge_function_time(gauge: Gauge):
     return measure_function_time
 
 
-# NOTE: This could be moved to thoth-sourcemanagement
 def git_source_from_url(url: str) -> SourceManagement:
     """Parse URL to get SourceManagement object."""
     res = urlparse(url)
     path = res.path.split('/')
     service_url = res.netloc
-    service_name = service_url.split('.')[-2]     # all urls should look something like x.x.github.com
+    service_name = service_url.split('.')[-2]
     s_type = ServiceType.by_name(service_name)
     if s_type == ServiceType.GITHUB:
         token = GITHUB_PRIVATE_TOKEN
@@ -112,6 +111,16 @@ def process_mismatch(mismatch):
             f" {mismatch.package_version}, the graph refresh job will not fail but will try to reschedule"
             " this in next run"
         )
+
+    if mismatch.missing_from_source != []:
+        # TODO: implement this function
+        for h in mismatch.missing_from_source:
+            graph.remove_hash_from_package_version(
+                package_name=mismatch.package_name,
+                package_version=hashmismatch.package_version,
+                index_url=hashmismatch.index_url,
+                sha256=h,
+            )
 
     repositories = graph.get_all_repositories_using_package_version(
         index_url=mismatch.index_url,
@@ -162,7 +171,7 @@ def process_missing_version(version):
     )
 
     issue_title = f"Missing package version {version.package_name}=={version.package_version} on {version.index_url}"
-    issue_body = lambda: "Automated message from package change detected by thoth.package-update"
+    def issue_body(): return "Automated message from package change detected by thoth.package-update"
 
     for repo in repositories:
         gitservice_repo = git_source_from_url(repo)

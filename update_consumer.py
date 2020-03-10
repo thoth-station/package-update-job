@@ -113,4 +113,5 @@ async def consume_missing_version(missing_versions):
         process_missing_version(version)
 
 if __name__ == "__main__":
+    start_http_server(8000)
     app.main()
