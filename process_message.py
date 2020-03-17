@@ -6,7 +6,7 @@ from thoth.sourcemanagement.sourcemanagement import SourceManagement
 from thoth.sourcemanagement.enums import ServiceType
 
 
-from prometheus_client import start_http_server, Counter, Gauge
+from prometheus_client import start_http_server, Counter, Gauge, Summary
 
 import asyncio
 import logging
@@ -45,36 +45,10 @@ _OPENSHIFT = OpenShift()
 graph = GraphDatabase()
 graph.connect()
 
-missing_package_process_runtime = Gauge(
-    "thoth_package_update_missing_package_runtime",
-    "Time to process missing package message.",
-    ["thoth", "package_update"],
-)
-hash_mismatch_process_runtime = Gauge(
-    "thoth_package_update_hashmismatch_runtime",
-    "Time to process hash mismatch message.",
-    ["thoth", "package_update"],
-)
-missing_version_process_runtime = Gauge(
-    "thoth_package_update_missing_version_runtime",
-    "Time to process missing version message.",
-    ["thoth", "package_update"],
-)
+
+REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
 
 """Process message for update_consumer."""
-
-
-def gauge_function_time(gauge: Gauge):
-    """Wrapper which uses a defined Gauge to post a metric about function execution time."""
-    def measure_function_time(func):
-        def inner_func1():
-            start = time.time()
-            func(*args, *kwargs)
-            end = time.time()
-            gauge.set(end - start)
-
-        return inner_func1
-    return measure_function_time
 
 
 def git_source_from_url(url: str) -> SourceManagement:
@@ -93,7 +67,7 @@ def git_source_from_url(url: str) -> SourceManagement:
     return SourceManagement(service_type, res.scheme + "://" + res.netloc, token, res.path)
 
 
-@gauge_function_time(hash_mismatch_process_runtime)
+@REQUEST_TIME.time()
 def process_mismatch(mismatch):
     """Process a hash mismatch message from package-update producer."""
     try:
@@ -136,7 +110,7 @@ def process_mismatch(mismatch):
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
 
 
-@gauge_function_time(missing_package_process_runtime)
+@REQUEST_TIME.time()
 def process_missing_package(package):
     """Process a missing package message from package-update producer."""
     repostiories = graph.get_all_repositories_using_package(
@@ -152,7 +126,7 @@ def process_missing_package(package):
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
 
 
-@gauge_function_time(missing_version_process_runtime)
+@REQUEST_TIME.time()
 def process_missing_version(version):
     """Process a missing version message from package-update producer."""
     graph.update_missing_flag_package_version(

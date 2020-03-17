@@ -47,9 +47,6 @@ class MessageBase:
         broker=KAFKA_BOOTSTRAP_SERVERS,
         value_serializer="json",
         ssl_context=ssl_context,
-        web_enabled=True,
-        web_bind="0.0.0.0",
-        web_port=8080,
     )
 
     def __init__(

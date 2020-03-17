@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
 from messages.hash_mismatch import HashMismatchMessage
+from messages.message_base import MessageBase
 
 """Consume messages produced by package-update.py faust app."""
 
@@ -22,15 +23,8 @@ init_logging()
 
 _LOGGER = logging.getLogger("thoth.package_update")
 
-
-_KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-_KAFKA_CAFILE = os.getenv("KAFKA_CAFILE", "ca.crt")
-KAFKA_CLIENT_ID = os.getenv("KAFKA_CLIENT_ID", "thoth-messaging")
-KAFKA_PROTOCOL = os.getenv("KAFKA_PROTOCOL", "SSL")
+app = MessageBase.app
 KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
-
-ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=_KAFKA_CAFILE)
-app = faust.App("thoth-messaging", broker=_KAFKA_BOOTSTRAP_SERVERS, ssl_context=ssl_context, web_enabled=False)
 
 start_http_server(8000)
 # TODO: query prometheus scraper and get or create values for all metrics for now we will set them all to 0
@@ -38,17 +32,15 @@ start_http_server(8000)
 hash_mismatch_counter = Counter(
     "thoth_package_update_hashmismatch_total",
     "Total number of hashmismatches found.",
-    ["thoth", "package_update"],
 )
 missing_package_counter = Counter(
     "thoth_package_update_missingpackage_total",
     "Total number of hashmismatches found.",
-    ["thoth", "package_update"],
 )
+
 missing_package_version_counter = Counter(
     "thoth_package_update_missingversion_total",
     "Total number of hashmismatches found.",
-    ["thoth", "package_update"],
 )
 
 hash_mismatch_topic = app.topic(
