@@ -32,7 +32,7 @@ KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
 ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=_KAFKA_CAFILE)
 app = faust.App("thoth-messaging", broker=_KAFKA_BOOTSTRAP_SERVERS, ssl_context=ssl_context, web_enabled=False)
 
-# start_http_server(8000, addr="/metrics")
+start_http_server(8000)
 # TODO: query prometheus scraper and get or create values for all metrics for now we will set them all to 0
 # NOTE: these counters are temp metrics as they are already exposed by Kafka
 hash_mismatch_counter = Counter(
