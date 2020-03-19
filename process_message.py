@@ -1,3 +1,22 @@
+#!/usr/bin/env python3
+# thoth-package-update
+# Copyright(C) 2020 Kevin Postlethwait
+#
+# This program is free software: you can redistribute it and / or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+"""Process message for update_consumer."""
+
 from thoth.common import init_logging, OpenShift
 from thoth.storages import GraphDatabase
 from thoth.python import AIOSource
@@ -48,8 +67,6 @@ graph.connect()
 
 
 REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
-
-"""Process message for update_consumer."""
 
 
 def git_source_from_url(url: str) -> SourceManagement:
