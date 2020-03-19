@@ -42,6 +42,7 @@ GITLAB_PRIVATE_TOKEN = os.getenv(
 )
 
 _OPENSHIFT = OpenShift()
+_OPENSHIFT.use_argo = True
 graph = GraphDatabase()
 graph.connect()
 
@@ -113,7 +114,7 @@ def process_mismatch(mismatch):
 @REQUEST_TIME.time()
 def process_missing_package(package):
     """Process a missing package message from package-update producer."""
-    repostiories = graph.get_all_repositories_using_package(
+    repositories = graph.get_all_repositories_using_package(
         index_url=package.index_url,
         package_name=package.package_name
     )
@@ -138,7 +139,7 @@ def process_missing_version(version):
 
     # TODO: rerun thamos-advise/kebechet on any source using this package.
     #       this might be best done as an argo workflow?
-    graph.get_all_repositories_using_package_version(
+    repositories = graph.get_all_repositories_using_package_version(
         index_url=version.index_url,
         package_name=version.package_name,
         package_version=version.package_version,
