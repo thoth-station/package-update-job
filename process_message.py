@@ -34,6 +34,7 @@ import os
 import ssl
 from urllib.parse import urlparse
 from time import time
+import re
 
 from messages.missing_package import MissingPackageMessage
 from messages.missing_version import MissingVersionMessage
@@ -109,8 +110,8 @@ def process_mismatch(mismatch):
         for h in mismatch.missing_from_source:
             graph.remove_hash_from_package_version(
                 package_name=mismatch.package_name,
-                package_version=hashmismatch.package_version,
-                index_url=hashmismatch.index_url,
+                package_version=mismatch.package_version,
+                index_url=mismatch.index_url,
                 sha256=h,
             )
 
@@ -141,7 +142,11 @@ def process_missing_package(package):
 
     for repo in repositories:
         gitservice_repo = git_source_from_url(repo)
-        gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
+        requirements = re.split("\n| ", gitservice_repo.service.get_project().get_file_content("Pipfile"))
+        if package.package_name in requirements:
+            gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
+        else:
+            _OPENSHIFT.schedule_kebechet_run_url(repo, gitservice_repo.service_type.name)
 
 
 @REQUEST_TIME.time()
@@ -154,8 +159,6 @@ def process_missing_version(version):
         value=True,
     )
 
-    # TODO: rerun thamos-advise/kebechet on any source using this package.
-    #       this might be best done as an argo workflow?
     repositories = graph.get_all_repositories_using_package_version(
         index_url=version.index_url,
         package_name=version.package_name,
@@ -167,4 +170,5 @@ def process_missing_version(version):
 
     for repo in repositories:
         gitservice_repo = git_source_from_url(repo)
+        _OPENSHIFT.schedule_kebechet_run_url(repo, gitservice_repo.service_type.name)
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
