@@ -64,9 +64,9 @@
         },
         "alembic": {
             "hashes": [
-                "sha256:791a5686953c4b366d3228c5377196db2f534475bb38d26f70eb69668efd9028"
+                "sha256:035ab00497217628bf5d0be82d664d8713ab13d37b630084da8e1f98facf4dbf"
             ],
-            "version": "==1.4.1"
+            "version": "==1.4.2"
         },
         "amun": {
             "hashes": [
@@ -77,10 +77,10 @@
         },
         "argo-workflows": {
             "hashes": [
-                "sha256:289c40dcaf03af1cd489b53177a38df8c05b7a4a877f433b484bf715437c09d2",
-                "sha256:57b4eae0fb29100b92160265e44c14a4302ce0e27b2d7d8715df8d7e2a2e38b0"
+                "sha256:c0d222096759c5cb354328fa0ea2acf376933abf89c39134093ca96d50a72051",
+                "sha256:d8d4c1382ff5a0d23291d6b63d83bf57442343b80cb1c39bfdaec6bfd4aeff3e"
             ],
-            "version": "==3.0.2"
+            "version": "==3.2.0"
         },
         "async-timeout": {
             "hashes": [
@@ -113,17 +113,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:172f07391ad6bd261336cddaf988944b2d8e528a7c036d82c7841676cbc935ec",
-                "sha256:e3cf4a0e1a6d79d2761b6ab050cb897a4e753f625524d15c01540f9522a11874"
+                "sha256:d58f322045fad89788bb6a035ae84a248f1bc243775f7cf34a033e669dbb28ee",
+                "sha256:d5dc9faf5c0ba17396cca5200807790cf7036173304100a008602b211d7bdedd"
             ],
-            "version": "==1.12.22"
+            "version": "==1.12.27"
         },
         "botocore": {
             "hashes": [
-                "sha256:ac6b6ae659b797f7bb106a7bee5ff1c7de9ece85e542a334a1cd618f9f2782cc",
-                "sha256:b8b399828d6dfe8ee879c22aa313591c183b78a8733df437ba84d9f39cd1b219"
+                "sha256:5df5b59215902b68fe9a4f63608826661bfca321a94c927bd5d2d231441f9a66",
+                "sha256:bb1e86897c7393862a2a9b5ba9c68d9f20d2abd791d19e11d55d24e9d9388072"
             ],
-            "version": "==1.15.22"
+            "version": "==1.15.27"
         },
         "cachetools": {
             "hashes": [
@@ -672,10 +672,10 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:480eee754e60bcae983787a9a13bc8f155a111aef199afaa4f289d6a76aa622a",
-                "sha256:a920387dc3ee252a66679d0afecd34479fb6fc52c2bc20763793ed69e5b0dcc0"
+                "sha256:23808d571d2461a4ce3784ec12bbee5bdb8c026c143fe79d36cef8a6d653e71f",
+                "sha256:bb90a4e19c7233a580715fc986cc44be2c48fc10b31e71580a2037e1c94b6950"
             ],
-            "version": "==0.14.2"
+            "version": "==0.14.3"
         },
         "six": {
             "hashes": [
@@ -692,9 +692,9 @@
         },
         "sqlalchemy-utils": {
             "hashes": [
-                "sha256:7b6601b1d4c19dcdcd9fb0a6c39bc2a2cabf29ca47d137c8b6216d1055cc5547"
+                "sha256:f268af5bc03597fe7690d60df3e5f1193254a83e07e4686f720f61587ec4493a"
             ],
-            "version": "==0.36.2"
+            "version": "==0.36.3"
         },
         "terminaltables": {
             "hashes": [
@@ -727,11 +727,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:009d7a2bb573a761127cb4cfa5b8138d2e23ebee3464d625366104712b49deec",
-                "sha256:4f3c46b3cb2db2556582dbe6ee320f845489b781f354695036ab1ce5e4ec9778"
+                "sha256:544311be2a25d3aae24e99e6e822c3080cbaae521faf2cc9fce7e7be5af9fb17",
+                "sha256:94557adfef6079999ca2039f76145918a0ab9def3fa774be894e3b5716034ae4"
             ],
             "index": "pypi",
-            "version": "==0.22.3"
+            "version": "==0.22.5"
         },
         "toml": {
             "hashes": [
@@ -746,7 +746,7 @@
                 "sha256:910f4656f54de5993ad9304959ce9bb903f90aadc7c67a0bef07e678014e892d",
                 "sha256:cf8b63fedea4d89bab840ecbb93e75578af28f76f66c35889bd7065f5af88575"
             ],
-            "markers": "python_version < '3.8'",
+            "markers": "python_version < '3.7'",
             "version": "==3.7.4.1"
         },
         "tzlocal": {
