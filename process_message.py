@@ -108,17 +108,19 @@ def process_mismatch(mismatch):
     if mismatch.missing_from_source != []:
         # TODO: implement this function
         for h in mismatch.missing_from_source:
-            graph.remove_hash_from_package_version(
+            graph.update_python_package_hash_present_flag(
                 package_name=mismatch.package_name,
                 package_version=mismatch.package_version,
                 index_url=mismatch.index_url,
                 sha256=h,
             )
-
-    repositories = graph.get_all_repositories_using_package_version(
-        index_url=mismatch.index_url,
-        package_name=mismatch.package_name,
-        package_version=mismatch.package_version,
+    
+    repositories = graph.get_adviser_run_origins_all(
+        index_url=version.index_url,
+        package_name=version.package_name,
+        package_version=version.package_version,
+        count=None,
+        distinct=True,
     )
 
     issue_title = f"Hash mismatch for {mismatch.package_name}=={mismatch.package_version} on {mismatch.index_url}"
@@ -132,9 +134,11 @@ def process_mismatch(mismatch):
 @REQUEST_TIME.time()
 def process_missing_package(package):
     """Process a missing package message from package-update producer."""
-    repositories = graph.get_all_repositories_using_package(
-        index_url=package.index_url,
-        package_name=package.package_name
+    repositories = graph.get_adviser_run_origins_all(
+        index_url=version.index_url,
+        package_name=version.package_name,
+        count=None,
+        distinct=True,
     )
 
     issue_title = f"Missing package {package.package_name} on {package.index_url}"
@@ -159,10 +163,12 @@ def process_missing_version(version):
         value=True,
     )
 
-    repositories = graph.get_all_repositories_using_package_version(
+    repositories = graph.get_adviser_run_origins_all(
         index_url=version.index_url,
         package_name=version.package_name,
         package_version=version.package_version,
+        count=None,
+        distinct=True,
     )
 
     issue_title = f"Missing package version {version.package_name}=={version.package_version} on {version.index_url}"
