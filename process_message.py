@@ -114,11 +114,11 @@ def process_mismatch(mismatch):
                 index_url=mismatch.index_url,
                 sha256=h,
             )
-    
+
     repositories = graph.get_adviser_run_origins_all(
-        index_url=version.index_url,
-        package_name=version.package_name,
-        package_version=version.package_version,
+        index_url=mismatch.index_url,
+        package_name=mismatch.package_name,
+        package_version=mismatch.package_version,
         count=None,
         distinct=True,
     )
@@ -135,8 +135,8 @@ def process_mismatch(mismatch):
 def process_missing_package(package):
     """Process a missing package message from package-update producer."""
     repositories = graph.get_adviser_run_origins_all(
-        index_url=version.index_url,
-        package_name=version.package_name,
+        index_url=package.index_url,
+        package_name=package.package_name,
         count=None,
         distinct=True,
     )
