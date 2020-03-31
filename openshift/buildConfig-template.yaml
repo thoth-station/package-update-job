@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: package-releases-buildconfig
+  name: package-update-buildconfig
   annotations:
     description: This is Thoth Core - Package Releases Job BuildConfig
     openshift.io/display-name: "Thoth: Package Releases Job BuildConfig"

@@ -1,20 +1,20 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: user-api-deployment
+  name: package-update-deployment
   annotations:
-    description: "Thoth: User API"
-    openshift.io/display-name: "Thoth Core: User API"
+    description: "Thoth: package update consumer"
+    openshift.io/display-name: "Thoth Core: Package Update Consumer"
     version: 0.6.0-dev
-    tags: thoth,user-api,ai-stacks,aistacks
+    tags: thoth,package-update
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
-      This template defines resources needed to deploy Thoth User API on OpenShift.
+      This template defines resources needed to deploy Thoth Package Update Consumer on OpenShift
     template.openshift.io/provider-display-name: "Red Hat, Inc."
   labels:
-    template: user-api-deployment
+    template: package-update-deployment
     app: thoth
-    component: user-api
+    component: package-update
 
 parameters:
   - description: "Project the ImageStream to be use lives in."
@@ -85,8 +85,6 @@ objects:
                   value: "1"
                 - name: SUBCOMMAND
                   value: "${SUBCOMMAND}"
-                - name: APP_MODULE
-                  value: "thoth.user_api.openapi_server:app"
                 - name: KUBERNETES_API_URL
                   value: "https://kubernetes.default.svc.cluster.local"
                 - name: KUBERNETES_VERIFY_TLS
