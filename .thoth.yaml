@@ -1,4 +1,4 @@
-host: test.thoth-station.ninja
+host: stage.thoth-station.ninja
 tls_verify: false
 requirements_format: pipenv
 
