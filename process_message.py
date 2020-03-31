@@ -36,10 +36,6 @@ from urllib.parse import urlparse
 from time import time
 import re
 
-from messages.missing_package import MissingPackageMessage
-from messages.missing_version import MissingVersionMessage
-from messages.hash_mismatch import HashMismatchMessage
-
 init_logging()
 
 _LOGGER = logging.getLogger("thoth.package_update")

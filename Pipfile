@@ -12,6 +12,7 @@ faust = "*"
 aiomonitor = "*"
 prometheus-client = "<0.7.0"
 thoth-sourcemanagement = "*"
+thoth-messaging = "*"
 
 [requires]
 python_version = "3.6"

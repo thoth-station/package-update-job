@@ -21,17 +21,13 @@ from thoth.storages import GraphDatabase
 from thoth.python import AIOSource
 from thoth.python import Source
 from thoth.common import init_logging
+from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage, MessageBase
 
 import asyncio
 import logging
 import faust
 import os
 import ssl
-
-from messages.missing_package import MissingPackageMessage
-from messages.missing_version import MissingVersionMessage
-from messages.hash_mismatch import HashMismatchMessage
-from messages.message_base import MessageBase
 
 init_logging()
 

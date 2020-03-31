@@ -20,6 +20,7 @@
 from thoth.python import AIOSource
 from thoth.python import Source
 from thoth.common import init_logging
+from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage, MessageBase
 from process_message import process_mismatch, process_missing_package, process_missing_version
 
 from prometheus_client import start_http_server, Counter
@@ -30,11 +31,6 @@ import faust
 import os
 import ssl
 from urllib.parse import urlparse
-
-from messages.missing_package import MissingPackageMessage
-from messages.missing_version import MissingVersionMessage
-from messages.hash_mismatch import HashMismatchMessage
-from messages.message_base import MessageBase
 
 init_logging()
 
@@ -60,32 +56,9 @@ missing_package_version_counter = Counter(
     "Total number of hashmismatches found.",
 )
 
-hash_mismatch_topic = app.topic(
-    HashMismatchMessage.topic_name,
-    value_type=HashMismatchMessage.MessageContents,
-    retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS,
-    partitions=1,
-    internal=True,
-)
-
-missing_package_topic = app.topic(
-    MissingPackageMessage.topic_name,
-    value_type=MissingPackageMessage.MessageContents,
-    retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS,
-    partitions=1,
-    internal=True,
-)
-
-missing_version_topic = app.topic(
-    MissingVersionMessage.topic_name,
-    value_type=MissingVersionMessage.MessageContents,
-    retention=KAFKA_TOPIC_RETENTION_TIME_SECONDS,
-    partitions=1,
-    internal=True,
-)
-
-# TODO: for storages we need the following functions:
-#       update_hash_mismatch(index_url, package_name, package_version, new_hash) unless this is done by solver
+hash_mismatch_topic = HashMismatchMessage().topic
+missing_package_topic = MissingPackageMessage().topic
+missing_version_topic = MissingVersionMessage().topic
 
 
 @app.agent(hash_mismatch_topic)
