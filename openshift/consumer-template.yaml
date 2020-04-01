@@ -91,11 +91,6 @@ objects:
                   value: "0"
                 - name: THOTH_HOST
                   value: "khemenu.thoth-station.ninja"
-                - name: THOTH_FRONTEND_NAMESPACE
-                  valueFrom:
-                    configMapKeyRef:
-                      key: frontend-namespace
-                      name: thoth
                 - name: THOTH_MIDDLETIER_NAMESPACE
                   valueFrom:
                     configMapKeyRef:
@@ -105,11 +100,6 @@ objects:
                   valueFrom:
                     configMapKeyRef:
                       key: infra-namespace
-                      name: thoth
-                - name: THOTH_BACKEND_NAMESPACE
-                  valueFrom:
-                    configMapKeyRef:
-                      key: backend-namespace
                       name: thoth
                 - name: THOTH_DEPLOYMENT_NAME
                   valueFrom:
