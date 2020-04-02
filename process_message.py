@@ -24,8 +24,7 @@ from thoth.python import Source
 from thoth.sourcemanagement.sourcemanagement import SourceManagement
 from thoth.sourcemanagement.enums import ServiceType
 
-
-from prometheus_client import start_http_server, Counter, Gauge, Summary
+from prometheus_client import Summary
 
 import asyncio
 import logging

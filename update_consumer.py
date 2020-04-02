@@ -37,7 +37,6 @@ init_logging()
 _LOGGER = logging.getLogger("thoth.package_update")
 
 app = MessageBase.app
-KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
 
 start_http_server(8000)
 # TODO: query prometheus scraper and get or create values for all metrics for now we will set them all to 0
