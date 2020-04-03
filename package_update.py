@@ -21,6 +21,7 @@ from thoth.storages import GraphDatabase
 from thoth.python import AIOSource
 from thoth.python import Source
 from thoth.common import init_logging
+from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage, MessageBase
 
 import asyncio
 import logging
@@ -28,21 +29,11 @@ import faust
 import os
 import ssl
 
-from messages.missing_package import MissingPackageMessage
-from messages.missing_version import MissingVersionMessage
-from messages.hash_mismatch import HashMismatchMessage
-
 init_logging()
 
 _LOGGER = logging.getLogger("thoth.package_update")
 
-_KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-_KAFKA_CAFILE = os.getenv("KAFKA_CAFILE", "ca.crt")
-KAFKA_CLIENT_ID = os.getenv("KAFKA_CLIENT_ID", "thoth-messaging")
-KAFKA_PROTOCOL = os.getenv("KAFKA_PROTOCOL", "SSL")
-KAFKA_TOPIC_RETENTION_TIME_SECONDS = 60 * 60 * 24 * 45
-ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=_KAFKA_CAFILE)
-app = faust.App("thoth-messaging", broker=_KAFKA_BOOTSTRAP_SERVERS, ssl_context=ssl_context, web_enabled=False)
+app = MessageBase.app
 
 namespace = os.getenv("THOTH_NAMESPACE")
 

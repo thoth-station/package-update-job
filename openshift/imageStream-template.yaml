@@ -14,9 +14,9 @@ metadata:
     template.openshift.io/provider-display-name: Red Hat, Inc.
     thoth-station.ninja/template-version: 0.4.0
   labels:
-    template: package-Update-imagestream
+    template: package-update-imagestream
     app: thoth
-    component: package-releases
+    component: package-update
 
 objects:
   - kind: ImageStream

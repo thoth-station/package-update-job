@@ -1,0 +1,202 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: package-update-deployment
+  annotations:
+    description: "Thoth: package update consumer"
+    openshift.io/display-name: "Thoth Core: Package Update Consumer"
+    version: 0.6.0-dev
+    tags: thoth,package-update
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to deploy Thoth Package Update Consumer on OpenShift
+    template.openshift.io/provider-display-name: "Red Hat, Inc."
+  labels:
+    template: package-update-deployment
+    app: thoth
+    component: package-update
+
+parameters:
+  - description: "Project the ImageStream to be use lives in."
+    displayName: "ImageStream Project"
+    required: true
+    name: IMAGE_STREAM_NAMESPACE
+
+  - description: "Tag of the ImageStream to be use."
+    displayName: "ImageStream Tag"
+    required: true
+    name: IMAGE_STREAM_TAG
+    value: "latest"
+
+  - description: "Service account to be used."
+    displayName: "Service account name"
+    required: true
+    name: SERVICE_ACCOUNT_NAME
+    value: "package-update-consumer"
+
+  - description: "Subcommand to run in the package-update-job repository."
+    displayName: "Subcommand"
+    required: true
+    name: "SUBCOMMAND"
+    value: "consumer"
+
+objects:
+  - kind: Service
+    apiVersion: v1
+    metadata:
+      annotations:
+        thoth-station.ninja/template-version: 0.6.0-dev
+      labels:
+        app: thoth
+        component: package-update-consumer
+      name: package-update-consumer
+    spec:
+      ports:
+        - port: 8000
+          protocol: TCP
+          targetPort: 8000
+      selector:
+        service: package-update-consumer
+
+  - kind: DeploymentConfig
+    apiVersion: apps.openshift.io/v1
+    metadata:
+      annotations:
+        thoth-station.ninja/template-version: 0.6.0-dev
+      labels:
+        app: thoth
+        component: package-update-consumer
+      name: package-update-consumer
+    spec:
+      replicas: 1
+      selector:
+        service: package-update-consumer
+      template:
+        metadata:
+          labels:
+            service: package-update-consumer
+        spec:
+          serviceAccountName: "${SERVICE_ACCOUNT_NAME}"
+          containers:
+            - name: package-update-consumer
+              imagePullPolicy: Always
+              env:
+                - name: THOTH_USE_ARGO
+                  value: "1"
+                - name: SUBCOMMAND
+                  value: "${SUBCOMMAND}"
+                - name: KUBERNETES_API_URL
+                  value: "https://kubernetes.default.svc.cluster.local"
+                - name: KUBERNETES_VERIFY_TLS
+                  value: "0"
+                - name: THOTH_HOST
+                  value: "khemenu.thoth-station.ninja"
+                - name: THOTH_MIDDLETIER_NAMESPACE
+                  valueFrom:
+                    configMapKeyRef:
+                      key: middletier-namespace
+                      name: thoth
+                - name: THOTH_INFRA_NAMESPACE
+                  valueFrom:
+                    configMapKeyRef:
+                      key: infra-namespace
+                      name: thoth
+                - name: THOTH_DEPLOYMENT_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      key: storage-bucket-name
+                      name: thoth
+                - name: THOTH_S3_ENDPOINT_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: ceph-host
+                      name: thoth
+                - name: THOTH_CEPH_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      key: ceph-bucket-name
+                      name: thoth
+                - name: THOTH_CEPH_BUCKET_PREFIX
+                  valueFrom:
+                    configMapKeyRef:
+                      key: ceph-bucket-prefix
+                      name: thoth
+                - name: KNOWLEDGE_GRAPH_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      key: postgresql-host
+                      name: thoth
+                - name: KNOWLEDGE_GRAPH_PORT
+                  value: "5432"
+                - name: KNOWLEDGE_GRAPH_SSL_DISABLED
+                  value: "1"
+                - name: KNOWLEDGE_GRAPH_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-user
+                - name: KNOWLEDGE_GRAPH_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-password
+                - name: KNOWLEDGE_GRAPH_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-name
+                - name: KAFKA_BOOTSTRAP_SERVERS
+                  valueFrom:
+                    configMapKeyRef:
+                      key: kafka-bootstrap-servers
+                      name: thoth
+                - name: KAFKA_CAFILE
+                  value: "/mnt/secrets/kafka_ca.crt"
+                - name: KAFKA_CLIENT_ID
+                  valueFrom:
+                    configMapKeyRef:
+                      key: kafka-client-id
+                      name: thoth
+                - name: KAFKA_SSL_AUTH
+                  valueFrom:
+                    configMapKeyRef:
+                      key: kafka-ssl-auth
+                      name: thoth
+                - name: KAFKA_RETENTION_TIME_SECONDS
+                  valueFrom:
+                    configMapKeyRef:
+                      key: kafka-topic-retention-time
+                      value: thoth
+              ports:
+                - containerPort: 8000
+                  protocol: HTTP
+              resources:
+                requests:
+                  memory: "1Gi"
+                  cpu: "2"
+                limits:
+                  memory: "1Gi"
+                  cpu: "2"
+              volumeMounts:
+                - name: secrets
+                  mountPath: /mnt/secrets
+                  readOnly: true
+          volumes:
+            - name: secrets
+              secret:
+                secretName: "kafka-secret"
+                items:
+                  - key: kafka_ca.crt
+                    path: kafka_ca.crt
+      test: false
+      triggers:
+        - type: ConfigChange
+        - type: ImageChange
+          imageChangeParams:
+            automatic: true
+            containerNames:
+              - package-update-consumer
+            from:
+              kind: ImageStreamTag
+              namespace: "${IMAGE_STREAM_NAMESPACE}"
+              name: "package-update-job:${IMAGE_STREAM_TAG}"

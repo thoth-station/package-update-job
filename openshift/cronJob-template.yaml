@@ -35,7 +35,6 @@ parameters:
     displayName: ImageStream Project
     required: true
     name: IMAGE_STREAM_NAMESPACE
-    # TODO adjust ansible role so that we dont need a default here
     value: "thoth-infra-stage"
 
   - description: Tag of the ImageStream to be use
@@ -84,11 +83,27 @@ objects:
                     - name: APP_SCRIPT
                       value: "app.sh"
                     - name: KAFKA_BOOTSTRAP_SERVERS
-                      value: "stage-kafka-bootstrap-dh-stage-message-bus.cloud.paas.stage.psi.redhat.com:443"
+                      valueFrom:
+                        configMapKeyRef:
+                          key: kafka-bootstrap-servers
+                          name: thoth
                     - name: KAFKA_CAFILE
                       value: "/mnt/secrets/kafka_ca.crt"
                     - name: KAFKA_TOPIC_RETENTION_TIME_SECONDS
-                      value: 60*60*24
+                      valueFrom:
+                        configMapKeyRef:
+                          key: kafka-topic-retention-time
+                          name: thoth
+                    - name: KAFKA_SSL_AUTH
+                      valueFrom:
+                        configMapKeyRef:
+                          key: kafka-ssl-auth
+                          name: thoth
+                    - name: KAFKA_CLIENT_ID
+                      valueFrom:
+                        configMapKeyRef:
+                          key: kafka-client-id
+                          name: thoth
                     - name: RSYSLOG_HOST
                       valueFrom:
                         configMapKeyRef:
