@@ -149,16 +149,24 @@ objects:
                   valueFrom:
                     configMapKeyRef:
                       key: kafka-bootstrap-servers
-                      name: kafka
+                      name: thoth
                 - name: KAFKA_CAFILE
                   value: "/mnt/secrets/kafka_ca.crt"
                 - name: KAFKA_CLIENT_ID
-                  value: "thoth-messaging"
-                - name: KAFKA_PROTOCOL
                   valueFrom:
                     configMapKeyRef:
-                      key: kafka-protocol
-                      name: kafka
+                      key: kafka-client-id
+                      name: thoth
+                - name: KAFKA_SSL_AUTH
+                  valueFrom:
+                    configMapKeyRef:
+                      key: kafka-ssl-auth
+                      name: thoth
+                - name: KAFKA_RETENTION_TIME_SECONDS
+                  valueFrom:
+                    configMapKeyRef:
+                      key: kafka-topic-retention-time
+                      value: thoth
               ports:
                 - containerPort: 8000
                   protocol: HTTP
