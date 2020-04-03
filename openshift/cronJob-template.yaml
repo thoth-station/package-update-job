@@ -86,15 +86,24 @@ objects:
                       valueFrom:
                         configMapKeyRef:
                           key: kafka-bootstrap-servers
-                          name: kafka
+                          name: thoth
                     - name: KAFKA_CAFILE
                       value: "/mnt/secrets/kafka_ca.crt"
                     - name: KAFKA_TOPIC_RETENTION_TIME_SECONDS
-                      value: 60*60*24
+                      valueFrom:
+                        configMapKeyRef:
+                          key: kafka-topic-retention-time
+                          name: thoth
                     - name: KAFKA_SSL_AUTH
-                      value: "0"
+                      valueFrom:
+                        configMapKeyRef:
+                          key: kafka-ssl-auth
+                          name: thoth
                     - name: KAFKA_CLIENT_ID
-                      value: "thoth-messaging"
+                      valueFrom:
+                        configMapKeyRef:
+                          key: kafka-client-id
+                          name: thoth
                     - name: RSYSLOG_HOST
                       valueFrom:
                         configMapKeyRef:
