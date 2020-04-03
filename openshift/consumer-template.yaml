@@ -166,7 +166,7 @@ objects:
                   valueFrom:
                     configMapKeyRef:
                       key: kafka-topic-retention-time
-                      value: thoth
+                      name: thoth
               ports:
                 - containerPort: 8000
                   protocol: HTTP
