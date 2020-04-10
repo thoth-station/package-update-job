@@ -54,7 +54,7 @@ objects:
       to:
         kind: Service
         name: package-update-consumer
-q
+
   - kind: Service
     apiVersion: v1
     metadata:
