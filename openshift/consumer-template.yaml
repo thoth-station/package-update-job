@@ -41,6 +41,20 @@ parameters:
     value: "consumer"
 
 objects:
+  - kind: Route
+    apiVersion: route.openshift.io/v1
+    metadata:
+      name: package-update-consumer
+      annotations:
+        thoth-station.ninja/template-version: 0.6.0-dev
+      labels:
+        app: thoth
+        component: package-update-consumer
+    spec:
+      to:
+        kind: Service
+        name: package-update-consumer
+
   - kind: Service
     apiVersion: v1
     metadata:
@@ -52,9 +66,9 @@ objects:
       name: package-update-consumer
     spec:
       ports:
-        - port: 8000
+        - port: 80
           protocol: TCP
-          targetPort: 8000
+          targetPort: 8080
       selector:
         service: package-update-consumer
 
@@ -168,7 +182,7 @@ objects:
                       key: kafka-topic-retention-time
                       name: thoth
               ports:
-                - containerPort: 8000
+                - containerPort: 8080
                   protocol: HTTP
               resources:
                 requests:
