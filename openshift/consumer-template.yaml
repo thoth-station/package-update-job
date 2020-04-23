@@ -21,18 +21,13 @@ parameters:
     displayName: "ImageStream Project"
     required: true
     name: IMAGE_STREAM_NAMESPACE
+    value: thoth-test-core
 
   - description: "Tag of the ImageStream to be use."
     displayName: "ImageStream Tag"
     required: true
     name: IMAGE_STREAM_TAG
     value: "latest"
-
-  - description: "Service account to be used."
-    displayName: "Service account name"
-    required: true
-    name: SERVICE_ACCOUNT_NAME
-    value: "package-update-consumer"
 
   - description: "Subcommand to run in the package-update-job repository."
     displayName: "Subcommand"
@@ -76,7 +71,6 @@ objects:
           labels:
             service: package-update-consumer
         spec:
-          serviceAccountName: "${SERVICE_ACCOUNT_NAME}"
           containers:
             - name: package-update-consumer
               imagePullPolicy: Always
@@ -169,7 +163,7 @@ objects:
                       name: thoth
               ports:
                 - containerPort: 8000
-                  protocol: HTTP
+                  protocol: TCP
               resources:
                 requests:
                   memory: "1Gi"
