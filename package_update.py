@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# thoth-storages
+# thoth-package-update
 # Copyright(C) 2020 Kevin Postlethwait
 #
 # This program is free software: you can redistribute it and / or modify
