@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # package-update-job
-# Copyright(C) 2018, 2019, 2020 Fridolin Pokorny
+# Copyright(C) 2020 Kevin Postlethwait
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,8 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""A CLI tool and library for interacting with Thoth."""
+"""Keep packages up to date in our database."""
+
+from thoth.common import __version__ as __common__version__
+from thoth.storages import __version__ as __storages__version___
 
 __name__ = "thamos"
 __version__ = "0.6.0"
-__author__ = "Fridolin Pokorny <fridolin.pokorny@gmail.com>"
+__service_version__ = f"{__version__}+storage.{__storages__version__}.common.{__common__version__}"
+__author__ = "Kevin Postlethwait <k.postlethwait24@gmail.com>"
