@@ -18,7 +18,7 @@
 """Keep packages up to date in our database."""
 
 from thoth.common import __version__ as __common__version__
-from thoth.storages import __version__ as __storages__version___
+from thoth.storages import __version__ as __storages__version__
 
 __name__ = "thamos"
 __version__ = "0.6.0"
