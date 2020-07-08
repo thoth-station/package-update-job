@@ -39,17 +39,11 @@ init_logging()
 
 _LOGGER = logging.getLogger("thoth.package_update")
 
-_SOLVER_OUTPUT = os.getenv("THOTH_SOLVER_OUTPUT", "http://result-api/api/v1/solver-result",)
-_PACKAGE_ANALYZER_OUTPUT = os.getenv(
-    "THOTH_PACKAGE_ANALYZER_OUTPUT", "http://result-api/api/v1/package-analysis-result",
-)
-_SUBGRAPH_CHECK_API = os.getenv("THOTH_SUBGRAPH_CHECK_API", "http://result-api/api/v1/subgraph-check",)
-
-GITHUB_PRIVATE_TOKEN = os.getenv("THOTH_GITHUB_PRIVATE_TOKEN", None,)
-GITLAB_PRIVATE_TOKEN = os.getenv("THOTH_GITLAB_PRIVATE_TOKEN", None,)
+GITHUB_PRIVATE_TOKEN = os.getenv("THOTH_GITHUB_PRIVATE_TOKEN")
+GITLAB_PRIVATE_TOKEN = os.getenv("THOTH_GITLAB_PRIVATE_TOKEN")
 
 _OPENSHIFT = OpenShift()
-_OPENSHIFT.use_argo = True
+
 graph = GraphDatabase()
 graph.connect()
 
@@ -80,8 +74,6 @@ def process_mismatch(mismatch):
         analysis_id = _OPENSHIFT.schedule_all_solvers(
             packages=f"{mismatch.package_name}==={mismatch.package_version}",
             indexes=[mismatch.index_url],
-            output=_SOLVER_OUTPUT,
-            transitive=False,  # NOTE: not sure what option should be used here
         )
     except Exception:
         # If we get some errors from OpenShift master - do not retry. Rather schedule the remaining
