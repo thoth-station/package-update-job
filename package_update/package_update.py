@@ -88,8 +88,8 @@ async def main():
             try:
                 await missing_version.publish_to_topic(
                     missing_version.MessageContents(
-                        index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1]
-                    )
+                        index_url=pkg_ver[2], package_name=pkg_ver[0], package_version=pkg_ver[1],
+                    ),
                 )
                 _LOGGER.info("%r no longer provides %r-%r", pkg_ver[2], pkg_ver[0], pkg_ver[1])
             except Exception as identifier:
@@ -108,7 +108,7 @@ async def main():
                         package_version=pkg_ver[1],
                         missing_from_source=list(stored_hashes-source_hashes),
                         missing_from_database=list(source_hashes-stored_hashes),
-                    )
+                    ),
                 )
                 _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
             except Exception as identifier:

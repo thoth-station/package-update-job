@@ -39,22 +39,14 @@ init_logging()
 
 _LOGGER = logging.getLogger("thoth.package_update")
 
-_SOLVER_OUTPUT = os.getenv(
-    "THOTH_SOLVER_OUTPUT", "http://result-api/api/v1/solver-result"
-)
+_SOLVER_OUTPUT = os.getenv("THOTH_SOLVER_OUTPUT", "http://result-api/api/v1/solver-result",)
 _PACKAGE_ANALYZER_OUTPUT = os.getenv(
-    "THOTH_PACKAGE_ANALYZER_OUTPUT", "http://result-api/api/v1/package-analysis-result"
+    "THOTH_PACKAGE_ANALYZER_OUTPUT", "http://result-api/api/v1/package-analysis-result",
 )
-_SUBGRAPH_CHECK_API = os.getenv(
-    "THOTH_SUBGRAPH_CHECK_API", "http://result-api/api/v1/subgraph-check"
-)
+_SUBGRAPH_CHECK_API = os.getenv("THOTH_SUBGRAPH_CHECK_API", "http://result-api/api/v1/subgraph-check",)
 
-GITHUB_PRIVATE_TOKEN = os.getenv(
-    "THOTH_GITHUB_PRIVATE_TOKEN", None
-)
-GITLAB_PRIVATE_TOKEN = os.getenv(
-    "THOTH_GITLAB_PRIVATE_TOKEN", None
-)
+GITHUB_PRIVATE_TOKEN = os.getenv("THOTH_GITHUB_PRIVATE_TOKEN", None,)
+GITLAB_PRIVATE_TOKEN = os.getenv("THOTH_GITLAB_PRIVATE_TOKEN", None,)
 
 _OPENSHIFT = OpenShift()
 _OPENSHIFT.use_argo = True
@@ -62,19 +54,19 @@ graph = GraphDatabase()
 graph.connect()
 
 
-REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
+REQUEST_TIME = Summary("request_processing_seconds", "Time spent processing request")
 
 
 def git_source_from_url(url: str) -> SourceManagement:
     """Parse URL to get SourceManagement object."""
     res = urlparse(url)
-    path = res.path.split('/')
+    path = res.path.split("/")
     service_url = res.netloc
-    service_name = service_url.split('.')[-2]
-    s_type = ServiceType.by_name(service_name)
-    if s_type == ServiceType.GITHUB:
+    service_name = service_url.split(".")[-2]
+    service_type = ServiceType.by_name(service_name)
+    if service_type == ServiceType.GITHUB:
         token = GITHUB_PRIVATE_TOKEN
-    elif s_type == ServiceType.GITLAB:
+    elif service_type == ServiceType.GITLAB:
         token = GITLAB_PRIVATE_TOKEN
     else:
         raise NotImplementedError("There is no token for this service type")
@@ -89,7 +81,7 @@ def process_mismatch(mismatch):
             packages=f"{mismatch.package_name}==={mismatch.package_version}",
             indexes=[mismatch.index_url],
             output=_SOLVER_OUTPUT,
-            transitive=False,   # NOTE: not sure what option should be used here
+            transitive=False,  # NOTE: not sure what option should be used here
         )
     except Exception:
         # If we get some errors from OpenShift master - do not retry. Rather schedule the remaining
@@ -97,7 +89,7 @@ def process_mismatch(mismatch):
         _LOGGER.exception(
             f"Failed to schedule new solver to solve package {mismatch.package_name} in version"
             f" {mismatch.package_version}, the graph refresh job will not fail but will try to reschedule"
-            " this in next run"
+            " this in next run",
         )
 
     if mismatch.missing_from_source != []:
@@ -119,7 +111,9 @@ def process_mismatch(mismatch):
     )
 
     issue_title = f"Hash mismatch for {mismatch.package_name}=={mismatch.package_version} on {mismatch.index_url}"
-    def issue_body(): return "Automated message from package change detected by thoth.package-update"
+
+    def issue_body():
+        return "Automated message from package change detected by thoth.package-update"
 
     for repo in repositories:
         gitservice_repo = git_source_from_url(repo)
@@ -130,14 +124,13 @@ def process_mismatch(mismatch):
 def process_missing_package(package):
     """Process a missing package message from package-update producer."""
     repositories = graph.get_adviser_run_origins_all(
-        index_url=package.index_url,
-        package_name=package.package_name,
-        count=None,
-        distinct=True,
+        index_url=package.index_url, package_name=package.package_name, count=None, distinct=True,
     )
 
     issue_title = f"Missing package {package.package_name} on {package.index_url}"
-    def issue_body(): return "Automated message from package change detected by thoth.package-update"
+
+    def issue_body():
+        return "Automated message from package change detected by thoth.package-update"
 
     for repo in repositories:
         gitservice_repo = git_source_from_url(repo)
@@ -167,7 +160,9 @@ def process_missing_version(version):
     )
 
     issue_title = f"Missing package version {version.package_name}=={version.package_version} on {version.index_url}"
-    def issue_body(): return "Automated message from package change detected by thoth.package-update"
+
+    def issue_body():
+        return "Automated message from package change detected by thoth.package-update"
 
     for repo in repositories:
         gitservice_repo = git_source_from_url(repo)
