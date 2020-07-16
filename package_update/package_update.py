@@ -41,7 +41,9 @@ app = MessageBase.app
 
 namespace = os.getenv("THOTH_NAMESPACE")
 
-async_sem = asyncio.Semaphore(1000)
+SEMAPHORE_LIMIT = int(os.getenv("THOTH_PACKAGE_UPDATE_SEMAPHORE_LIMIT", 1000))
+
+async_sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
 
 def with_semaphore(async_sem) -> Callable:
     """Only have N async functions running at the same time."""
@@ -72,7 +74,6 @@ async def _check_package_availability(
     src = sources[package[1]]
     if not package[0] in src["packages"]:
         removed_packages.add((package[1], package[0]))
-        print((package[1], package[0]))
         try:
             await missing_package.publish_to_topic(missing_package.MessageContents(
                 index_url=package[1],
@@ -109,6 +110,9 @@ async def _check_hashes(
     try:
         source_hashes = {i["sha256"] for i in await source.get_package_hashes(package_version[0], package_version[1])}
     except ClientResponseError:
+        _LOGGER.exception(
+            "404 error retrieving hashes for: %r==%r on %r",package_version[0], package_version[1], package_version[2],
+        )
         return False  # webpage might be down
 
     stored_hashes = set(
@@ -143,7 +147,9 @@ async def _get_all_versions(
     try:
         accumulator[(package_name, source)] = await src.get_package_versions(package_name)
     except ClientResponseError:
-        pass
+        _LOGGER.exception(
+            "404 error retrieving versions for: %r on %r", package_name, source,
+        )
 
 @app.command()
 async def main():
@@ -180,7 +186,7 @@ async def main():
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
 
-    all_pkg_names = set([(i[0], i[2]) for i in all_pkg_vers])
+    all_pkg_names = {(i[0], i[2]) for i in all_pkg_vers}
 
     versions = dict.fromkeys(all_pkg_names)
 
@@ -190,7 +196,6 @@ async def main():
     async_tasks.clear()
 
     _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_vers))
-    print(f"Checking integrity of {len(all_pkg_vers)} package(s)")
     for pkg_ver in all_pkg_vers:
         # Skip because we have already marked the entire package as missing
         if (pkg_ver[2], pkg_ver[0]) in removed_pkgs or versions[(pkg_ver[0], pkg_ver[2])] is None:  # in case of 404
