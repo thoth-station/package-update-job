@@ -20,14 +20,14 @@
 """This is Thoth investigator consumer metrics."""
 
 
-from package_update import __version__ as __package_update_version__
+from package_update import __service_version__
 
 from prometheus_client import Gauge, Counter
 
 
 # add the application version info metric
 investigator_info = Gauge("package_update_consumer_info", "Package Update Version Info", labelnames=["version"])
-investigator_info.labels(version=__package_update_version__).inc()
+investigator_info.labels(version=__service_version__).inc()
 
 # Metrics for Kafka
 mismatch_in_progress = Gauge(

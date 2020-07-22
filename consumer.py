@@ -22,6 +22,7 @@ from thoth.python import Source
 from thoth.common import init_logging
 from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage, MessageBase
 from package_update.process_message import process_mismatch, process_missing_package, process_missing_version
+# from package_update import __service_version__
 
 from prometheus_client import start_http_server, Counter
 
@@ -34,44 +35,33 @@ from urllib.parse import urlparse
 
 init_logging()
 
-_LOGGER = logging.getLogger("thoth.package_update")
+_LOGGER = logging.getLogger(__name__)
+# _LOGGER.info("Thoth Package Update consumer v%s", __service_version__)
 
-app = MessageBase.app
-
-start_http_server(8000)
-# TODO: query prometheus scraper and get or create values for all metrics for now we will set them all to 0
-# NOTE: these counters are temp metrics as they are already exposed by Kafka
-hash_mismatch_counter = Counter(
-    "thoth_package_update_hashmismatch_total",
-    "Total number of hashmismatches found.",
-)
-missing_package_counter = Counter(
-    "thoth_package_update_missingpackage_total",
-    "Total number of hashmismatches found.",
-)
-
-missing_package_version_counter = Counter(
-    "thoth_package_update_missingversion_total",
-    "Total number of hashmismatches found.",
-)
+app = MessageBase().app
 
 hash_mismatch_topic = HashMismatchMessage().topic
 missing_package_topic = MissingPackageMessage().topic
 missing_version_topic = MissingVersionMessage().topic
 
+@app.page("/metrics")
+async def get_metrics(self, request):
+    """Serve the metrics from the consumer registry."""
+    return web.Response(text=generate_latest().decode("utf-8"))
 
+
+@app.page("/_health")
+async def get_health(self, request):
+    """Serve a readiness/liveness probe endpoint."""
+    data = {"status": "ready", "version": __package_update_version__}
+    return web.json_response(data)
+
+
+# NOTE: if we can change the PROCESS functions to be async we can set `concurrency` of @app.agent to something > 1
 @app.agent(hash_mismatch_topic)
 async def consume_hash_mismatch(hash_mismatches):
     """Loop when a hash mismatch message is received."""
     async for mismatch in hash_mismatches:
-        # TODO: update the hashes in the database? or is this done by solver
-        hash_mismatch_counter.inc()
-
-        # NOTE: This may work better as an argo work flow which looks something like:
-        #   A B C
-        #    ╲|╱
-        #     D
-        # Where A, B, C are all solvers and D is a container which warns all users of change
         process_mismatch(mismatch)
 
 
@@ -79,10 +69,6 @@ async def consume_hash_mismatch(hash_mismatches):
 async def consume_missing_package(missing_packages):
     """Loop when a missing package message is received."""
     async for package in missing_packages:
-        missing_package_counter.inc()
-        # TODO: determine how to mark an entire package as missing in the database
-
-        # TODO: open issue if package is a direct dependency of the user, otherwise rerun thamos-advise/kebechet
         process_missing_package(package)
 
 
@@ -94,5 +80,4 @@ async def consume_missing_version(missing_versions):
         process_missing_version(version)
 
 if __name__ == "__main__":
-    start_http_server(8000)
     app.main()

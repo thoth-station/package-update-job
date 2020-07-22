@@ -32,7 +32,7 @@ from functools import wraps
 from aiohttp.client_exceptions import ClientResponseError
 from typing import Dict, Any, Tuple, Callable
 
-from package_update import __version__ as __package_update_version__
+from thoth.package_update import __version__ as __package_update_version__
 
 init_logging()
 

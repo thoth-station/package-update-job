@@ -33,7 +33,7 @@ from urllib.parse import urlparse
 from time import time
 import re
 
-from package_update import metrics
+import package_update.metrics as metrics
 
 init_logging()
 
