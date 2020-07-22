@@ -21,7 +21,7 @@ from thoth.python import AIOSource
 from thoth.python import Source
 from thoth.common import init_logging
 from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage, MessageBase
-from .process_message import process_mismatch, process_missing_package, process_missing_version
+from package_update.process_message import process_mismatch, process_missing_package, process_missing_version
 
 from prometheus_client import start_http_server, Counter
 

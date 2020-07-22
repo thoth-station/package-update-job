@@ -30,19 +30,17 @@ import os
 import ssl
 from functools import wraps
 from aiohttp.client_exceptions import ClientResponseError
-
 from typing import Dict, Any, Tuple, Callable
+
+from package_update import __version__ as __package_update_version__
 
 init_logging()
 
-_LOGGER = logging.getLogger("thoth.package_update")
+_LOGGER = logging.getLogger(__name__)
+_LOGGER.info("Thoth package update producer v%s", __package_update_version__)
 
 app = MessageBase.app
-
-namespace = os.getenv("THOTH_NAMESPACE")
-
 SEMAPHORE_LIMIT = int(os.getenv("THOTH_PACKAGE_UPDATE_SEMAPHORE_LIMIT", 1000))
-
 async_sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
 
 def with_semaphore(async_sem) -> Callable:

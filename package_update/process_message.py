@@ -24,8 +24,6 @@ from thoth.python import Source
 from thoth.sourcemanagement.sourcemanagement import SourceManagement
 from thoth.sourcemanagement.enums import ServiceType
 
-from prometheus_client import Summary
-
 import asyncio
 import logging
 import faust
@@ -34,6 +32,8 @@ import ssl
 from urllib.parse import urlparse
 from time import time
 import re
+
+from package_update import metrics
 
 init_logging()
 
@@ -46,10 +46,6 @@ _OPENSHIFT = OpenShift()
 
 graph = GraphDatabase()
 graph.connect()
-
-
-REQUEST_TIME = Summary("request_processing_seconds", "Time spent processing request")
-
 
 def git_source_from_url(url: str) -> SourceManagement:
     """Parse URL to get SourceManagement object."""
@@ -67,7 +63,8 @@ def git_source_from_url(url: str) -> SourceManagement:
     return SourceManagement(service_type, res.scheme + "://" + res.netloc, token, res.path)
 
 
-@REQUEST_TIME.time()
+@metrics.mismatch_exceptions.count_exceptions()
+@metrics.mismatch_in_progress.track_inprogress()
 def process_mismatch(mismatch):
     """Process a hash mismatch message from package-update producer."""
     try:
@@ -111,8 +108,11 @@ def process_mismatch(mismatch):
         gitservice_repo = git_source_from_url(repo)
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
 
+    metrics.mismatch_success.inc()
 
-@REQUEST_TIME.time()
+
+@metrics.missing_package_exceptions.count_exceptions()
+@metrics.missing_package_in_progress.track_inprogress()
 def process_missing_package(package):
     """Process a missing package message from package-update producer."""
     repositories = graph.get_adviser_run_origins_all(
@@ -132,8 +132,11 @@ def process_missing_package(package):
         else:
             _OPENSHIFT.schedule_kebechet_run_url(repo, gitservice_repo.service_type.name)
 
+    metrics.missing_package_success.inc()
 
-@REQUEST_TIME.time()
+
+@metrics.missing_version_exceptions.count_exceptions()
+@metrics.missing_version_in_progress.track_inprogress()
 def process_missing_version(version):
     """Process a missing version message from package-update producer."""
     graph.update_missing_flag_package_version(
@@ -160,3 +163,5 @@ def process_missing_version(version):
         gitservice_repo = git_source_from_url(repo)
         _OPENSHIFT.schedule_kebechet_run_url(repo, gitservice_repo.service_type.name)
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
+
+    metrics.missing_version_success.inc()
