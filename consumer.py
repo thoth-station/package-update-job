@@ -22,7 +22,7 @@ from thoth.python import Source
 from thoth.common import init_logging
 from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage, MessageBase
 from package_update.process_message import process_mismatch, process_missing_package, process_missing_version
-# from package_update import __service_version__
+from package_update import __service_version__
 
 from prometheus_client import start_http_server, Counter
 
@@ -36,7 +36,7 @@ from urllib.parse import urlparse
 init_logging()
 
 _LOGGER = logging.getLogger(__name__)
-# _LOGGER.info("Thoth Package Update consumer v%s", __service_version__)
+_LOGGER.info("Thoth Package Update consumer v%s", __service_version__)
 
 app = MessageBase().app
 
