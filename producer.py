@@ -39,7 +39,7 @@ init_logging()
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.info("Thoth package update producer v%s", __package_update_version__)
 
-app = MessageBase.app
+app = MessageBase().app
 SEMAPHORE_LIMIT = int(os.getenv("THOTH_PACKAGE_UPDATE_SEMAPHORE_LIMIT", 1000))
 async_sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
 
