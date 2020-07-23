@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
-# thoth-investigator
-# Copyright(C) 2020 Christoph Görn
+# thoth-package_update
+# Copyright(C) 2020 Kevin Postlethwait
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-"""This is Thoth investigator consumer metrics."""
+"""This is Thoth package update consumer metrics."""
 
 
 from package_update import __service_version__
@@ -26,45 +26,34 @@ from prometheus_client import Gauge, Counter
 
 
 # add the application version info metric
-investigator_info = Gauge("package_update_consumer_info", "Package Update Version Info", labelnames=["version"])
-investigator_info.labels(version=__service_version__).inc()
+package_update_info = Gauge("package_update_consumer_info", "Package Update Version Info", labelnames=["version"])
+package_update_info.labels(version=__service_version__).inc()
 
 # Metrics for Kafka
-mismatch_in_progress = Gauge(
-    "hash_mismatch_in_progress",
-    "Total number of hashmismatch messages currently being processed. This will be 1 or 0 unless an async version is implemented",
+in_progress = Gauge(
+    "messages_in_progress",
+    "Total number of messages currently being processed. This will be 1 or 0 unless an async version is implemented",
+    ["message_name"],
 )
-mismatch_exceptions = Counter(
-    "hash_mismatch_exceptions",
-    "Number of hash mismatch messages which failed to be processed.",
+exceptions = Counter(
+    "message_exceptions",
+    "Number of messages which failed to be processed.",
+    ["message_name"],
 )
-mismatch_success = Counter(
-    "hash_mismatch_processed",
+success = Counter(
+    "messages_processed",
     "Number of hash mismatch messages which were successfully processed.",
+    ["message_name"],
 )
 
-missing_version_in_progress = Gauge(
-    "missing_version_in_progress",
-    "Total number of missing version messages currently being processed.",
-)
-missing_version_exceptions = Counter(
-    "missing_version_exceptions",
-    "Number of missing version messages which failed to be processed.",
-)
-missing_version_success = Counter(
-    "missing_version_processed",
-    "Number of missing version messages which were successfully processed.",
-)
+hash_mismatch_in_progress = in_progress.labels(message_name="hash_mismatch")
+hash_mismatch_exceptions = exceptions.labels(message_name="hash_mismatch")
+hash_mismatch_success = success.labels(message_name="hash_mismatch")
 
-missing_package_in_progress = Gauge(
-    "missing_package_in_progress",
-    "Total number of missing package messages currently being processed.",
-)
-missing_package_exceptions = Counter(
-    "missing_package_exceptions",
-    "Number of missing package messages which failed to be processed.",
-)
-missing_package_success = Counter(
-    "missing_package_processed",
-    "Number of missing package messages which were successfully processed.",
-)
+missing_version_in_progress = in_progress.labels(message_name="missing_version")
+missing_version_exceptions = exceptions.labels(message_name="missing_version")
+missing_version_success = success.labels(message_name="missing_version")
+
+missing_package_in_progress = in_progress.labels(message_name="missing_package")
+missing_package_exceptions = exceptions.labels(message_name="missing_package")
+missing_package_success = success.labels(message_name="missing_package")

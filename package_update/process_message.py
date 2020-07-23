@@ -63,8 +63,8 @@ def git_source_from_url(url: str) -> SourceManagement:
     return SourceManagement(service_type, res.scheme + "://" + res.netloc, token, res.path)
 
 
-@metrics.mismatch_exceptions.count_exceptions()
-@metrics.mismatch_in_progress.track_inprogress()
+@metrics.hash_mismatch_exceptions.count_exceptions()
+@metrics.hash_mismatch_in_progress.track_inprogress()
 def process_mismatch(mismatch):
     """Process a hash mismatch message from package-update producer."""
     try:
@@ -108,7 +108,7 @@ def process_mismatch(mismatch):
         gitservice_repo = git_source_from_url(repo)
         gitservice_repo.open_issue_if_not_exist(issue_title, issue_body)
 
-    metrics.mismatch_success.inc()
+    metrics.hash_mismatch_success.inc()
 
 
 @metrics.missing_package_exceptions.count_exceptions()
