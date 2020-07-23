@@ -24,7 +24,7 @@ from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMi
 from package_update.process_message import process_mismatch, process_missing_package, process_missing_version
 from package_update import __service_version__
 
-from prometheus_client import start_http_server, Counter
+from prometheus_client import generate_latest
 
 import asyncio
 import logging
@@ -32,6 +32,7 @@ import faust
 import os
 import ssl
 from urllib.parse import urlparse
+from aiohttp import web
 
 init_logging()
 
@@ -53,7 +54,7 @@ async def get_metrics(self, request):
 @app.page("/_health")
 async def get_health(self, request):
     """Serve a readiness/liveness probe endpoint."""
-    data = {"status": "ready", "version": __package_update_version__}
+    data = {"status": "ready", "version": __service_version__}
     return web.json_response(data)
 
 
