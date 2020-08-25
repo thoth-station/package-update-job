@@ -863,11 +863,11 @@
         },
         "thoth-messaging": {
             "hashes": [
-                "sha256:33643aabdf38544dbcbeab6fbb3e6875a3ca87ff42a60de2a95c10e4c58a4d6d",
-                "sha256:86dbc7f4c6929a1394dd46c586c4eff64ae9683fc03be2fb83a4edb5e9e0b3c0"
+                "sha256:455bd26b15f1b66a76084e7271184499718766a219f540f3f38e18d54689cd07",
+                "sha256:fae3805c6bd320dae5ea7808829e36297e382c56cb35800b112d46651425b07d"
             ],
             "index": "pypi",
-            "version": "==0.5.0"
+            "version": "==0.6.7"
         },
         "thoth-python": {
             "hashes": [
