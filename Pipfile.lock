@@ -887,11 +887,11 @@
         },
         "thoth-storages": {
             "hashes": [
-                "sha256:ae4694a8bc150dbcb1a9315de2eda3999fc62e6f92255f2c509aa9553c94dc9b",
-                "sha256:c5748c58c16c672997f200394d33dac8d1143d86d424d9a3cfeb06f61e711aac"
+                "sha256:b7f4d3fd974302740d0277c6bbcf0562700f0aa8c4092547bcadb7b9999a1c82",
+                "sha256:e98383ac165647bca502cd48a6f69d016bc4043902e932ec6ca72d9d6d8c2caf"
             ],
             "index": "pypi",
-            "version": "==0.24.5"
+            "version": "==0.25.5"
         },
         "toml": {
             "hashes": [
@@ -906,7 +906,7 @@
                 "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c",
                 "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"
             ],
-            "markers": "python_version < '3.8'",
+            "markers": "python_version < '3.7'",
             "version": "==3.7.4.3"
         },
         "tzlocal": {
