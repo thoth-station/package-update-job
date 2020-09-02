@@ -42,7 +42,7 @@ _LOGGER.info("Thoth package update producer v%s", __package_update_version__)
 app = MessageBase().app
 SEMAPHORE_LIMIT = int(os.getenv("THOTH_PACKAGE_UPDATE_SEMAPHORE_LIMIT", 1000))
 async_sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
-COMPONENT_NAME="package-update-job"
+COMPONENT_NAME = "package-update-job"
 
 def with_semaphore(async_sem) -> Callable:
     """Only have N async functions running at the same time."""
