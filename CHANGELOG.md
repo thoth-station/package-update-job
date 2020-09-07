@@ -160,3 +160,7 @@ all the things that you see...
 * Remove templates handled by thoth-application (#96)
 * Remove old bits (#95)
 * enable pre-commit support for the application (#94)
+
+## Release 0.8.1 (2020-09-07T22:57:53)
+### Features
+* update messaging and add component_name and version (#124)
