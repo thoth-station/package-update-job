@@ -42,6 +42,7 @@ _LOGGER.info("Thoth package update producer v%s", __package_update_version__)
 app = MessageBase().app
 SEMAPHORE_LIMIT = int(os.getenv("THOTH_PACKAGE_UPDATE_SEMAPHORE_LIMIT", 1000))
 async_sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
+COMPONENT_NAME = "package-update-job"
 
 def with_semaphore(async_sem) -> Callable:
     """Only have N async functions running at the same time."""
@@ -76,6 +77,8 @@ async def _check_package_availability(
             await missing_package.publish_to_topic(missing_package.MessageContents(
                 index_url=package[1],
                 package_name=package[0],
+                component_name=COMPONENT_NAME,
+                service_version=__package_update_version__,
             ))
             _LOGGER.info("%r no longer provides %r", package[1], package[0])
             return False
@@ -97,7 +100,11 @@ async def _check_hashes(
         try:
             await missing_version.publish_to_topic(
                 missing_version.MessageContents(
-                    index_url=package_version[2], package_name=package_version[0], package_version=package_version[1],
+                    index_url=package_version[2],
+                    package_name=package_version[0],
+                    package_version=package_version[1],
+                    component_name=COMPONENT_NAME,
+                    service_version=__package_update_version__,
                 ),
             )
             _LOGGER.info("%r no longer provides %r-%r", package_version[2], package_version[0], package_version[1])
@@ -125,6 +132,8 @@ async def _check_hashes(
                     package_version=package_version[1],
                     missing_from_source=list(stored_hashes-source_hashes),
                     missing_from_database=list(source_hashes-stored_hashes),
+                    component_name=COMPONENT_NAME,
+                    service_version=__package_update_version__,
                 ),
             )
             _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
