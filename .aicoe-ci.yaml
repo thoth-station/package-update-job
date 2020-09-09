@@ -1,0 +1,15 @@
+check:
+  - thoth-precommit
+  - thoth-build
+build:
+  base-image: quay.io/thoth-station/s2i-thoth-ubi8-py36:v0.17.0
+  build-stratergy: Source
+  registry: quay.io
+  registry-org: thoth-station
+  registry-project: package-update-job
+  registry-secret: thoth-station-thoth-pusher-secret
+deploy:
+  project-org: thoth-station
+  project-name: thoth-application
+  image-name: package-update-job
+  overlay-contextpath: package-update/overlays/test/imagestreamtag.yaml
