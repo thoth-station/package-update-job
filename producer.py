@@ -176,7 +176,7 @@ async def main():
     async_tasks = []
     for i in indexes:
         async_tasks.append(_gather_index_info(i, sources))
-    await asyncio.gather(*async_tasks)
+    await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
 
     all_pkgs = graph.get_python_packages_all(count=None, distinct=True)
@@ -188,7 +188,7 @@ async def main():
             removed_packages=removed_pkgs,
             missing_package=missing_package,
         ))
-    await asyncio.gather(*async_tasks)
+    await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
@@ -199,7 +199,7 @@ async def main():
 
     for i in all_pkg_names:
         async_tasks.append(_get_all_versions(package_name=i[0], source=i[1], sources=sources, accumulator=versions))
-    await asyncio.gather(*async_tasks)
+    await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
 
     _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_vers))
@@ -218,7 +218,7 @@ async def main():
             graph=graph,
         ))
 
-    await asyncio.gather(*async_tasks)
+    await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
 
 if __name__ == "__main__":
