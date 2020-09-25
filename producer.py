@@ -44,6 +44,15 @@ SEMAPHORE_LIMIT = int(os.getenv("THOTH_PACKAGE_UPDATE_SEMAPHORE_LIMIT", 1000))
 async_sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
 COMPONENT_NAME = "package-update-job"
 
+def redirect_exception_message(func):
+    """Redirect a messages exception to be logged instead of halting execution."""
+    async def inner_function(*args, **kwargs):
+        try:
+            await func(*args, **kwargs)
+        except Exception(e):
+            _LOGGER.warning(e)
+    return inner_function
+
 def with_semaphore(async_sem) -> Callable:
     """Only have N async functions running at the same time."""
     def somedec_outer(fn):
@@ -56,6 +65,7 @@ def with_semaphore(async_sem) -> Callable:
     return somedec_outer
 
 @with_semaphore(async_sem)
+@redirect_exception_message
 async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index] = dict()
     aggregator[index]["source"] = AIOSource(index)
@@ -64,6 +74,7 @@ async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index]["packages"] = aggregator[index]["packages"].packages
 
 @with_semaphore(async_sem)
+@redirect_exception_message
 async def _check_package_availability(
     package: Tuple[str, str, str],
     sources: Dict[str, Any],
@@ -87,6 +98,7 @@ async def _check_package_availability(
     return True
 
 @with_semaphore(async_sem)
+@redirect_exception_message
 async def _check_hashes(
     package_version: Tuple[str, str, str],
     package_versions,
@@ -144,6 +156,7 @@ async def _check_hashes(
     return True
 
 @with_semaphore(async_sem)
+@redirect_exception_message
 async def _get_all_versions(
     package_name: str,
     source: str,
