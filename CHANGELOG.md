@@ -164,3 +164,19 @@ all the things that you see...
 ## Release 0.8.1 (2020-09-07T22:57:53)
 ### Features
 * update messaging and add component_name and version (#124)
+
+## Release 0.8.2 (2020-09-25T07:49:35)
+### Features
+* remove consumer logic (moved to investigator) (#130)
+* :truck: include aicoe-ci configuration file
+### Automatic Updates
+* :pushpin: Automatic update of dependency pytest from 6.0.1 to 6.0.2 (#138)
+* :pushpin: Automatic update of dependency pytest from 6.0.1 to 6.0.2 (#137)
+* :pushpin: Automatic update of dependency thoth-messaging from 0.7.0 to 0.7.6 (#136)
+* :pushpin: Automatic update of dependency pytest from 6.0.1 to 6.0.2 (#135)
+* :pushpin: Automatic update of dependency thoth-messaging from 0.7.0 to 0.7.6 (#134)
+* :pushpin: Automatic update of dependency thoth-messaging from 0.7.0 to 0.7.6 (#133)
+* :pushpin: Automatic update of dependency thoth-sourcemanagement from 0.3.0 to 0.3.2 (#132)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.6 to 0.25.11 (#131)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.5 to 0.25.6 (#129)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.5 to 0.25.6 (#128)
