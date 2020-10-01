@@ -94,7 +94,7 @@ async def _check_package_availability(
             _LOGGER.info("%r no longer provides %r", package[1], package[0])
             return False
         except Exception as e:
-            _LOGGER.exception("Failed to publish with the following error message: %r", e)
+            _LOGGER.warning("Failed to publish with the following error message: %r", e)
     return True
 
 @with_semaphore(async_sem)
@@ -122,12 +122,12 @@ async def _check_hashes(
             _LOGGER.info("%r no longer provides %r-%r", package_version[2], package_version[0], package_version[1])
             return False
         except Exception as identifier:
-            _LOGGER.exception("Failed to publish with the following error message: %r", str(identifier))
+            _LOGGER.warning("Failed to publish with the following error message: %r", str(identifier))
 
     try:
         source_hashes = {i["sha256"] for i in await source.get_package_hashes(package_version[0], package_version[1])}
     except ClientResponseError:
-        _LOGGER.exception(
+        _LOGGER.warning(
             "404 error retrieving hashes for: %r==%r on %r",package_version[0], package_version[1], package_version[2],
         )
         return False  # webpage might be down
@@ -151,7 +151,7 @@ async def _check_hashes(
             _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
             return False
         except Exception as identifier:
-            _LOGGER.exception("Failed to publish with the following error message: %r", str(identifier))
+            _LOGGER.warning("Failed to publish with the following error message: %r", str(identifier))
 
     return True
 
@@ -167,7 +167,7 @@ async def _get_all_versions(
     try:
         accumulator[(package_name, source)] = await src.get_package_versions(package_name)
     except ClientResponseError:
-        _LOGGER.exception(
+        _LOGGER.warning(
             "404 error retrieving versions for: %r on %r", package_name, source,
         )
 
