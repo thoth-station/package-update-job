@@ -44,6 +44,15 @@ SEMAPHORE_LIMIT = int(os.getenv("THOTH_PACKAGE_UPDATE_SEMAPHORE_LIMIT", 1000))
 async_sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
 COMPONENT_NAME = "package-update-job"
 
+def redirect_exception_message(func):
+    """Redirect a messages exception to be logged instead of halting execution."""
+    async def inner_function(*args, **kwargs):
+        try:
+            await func(*args, **kwargs)
+        except Exception(e):
+            _LOGGER.warning(e)
+    return inner_function
+
 def with_semaphore(async_sem) -> Callable:
     """Only have N async functions running at the same time."""
     def somedec_outer(fn):
@@ -56,6 +65,7 @@ def with_semaphore(async_sem) -> Callable:
     return somedec_outer
 
 @with_semaphore(async_sem)
+@redirect_exception_message
 async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index] = dict()
     aggregator[index]["source"] = AIOSource(index)
@@ -64,6 +74,7 @@ async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index]["packages"] = aggregator[index]["packages"].packages
 
 @with_semaphore(async_sem)
+@redirect_exception_message
 async def _check_package_availability(
     package: Tuple[str, str, str],
     sources: Dict[str, Any],
@@ -87,6 +98,7 @@ async def _check_package_availability(
     return True
 
 @with_semaphore(async_sem)
+@redirect_exception_message
 async def _check_hashes(
     package_version: Tuple[str, str, str],
     package_versions,
@@ -115,7 +127,7 @@ async def _check_hashes(
     try:
         source_hashes = {i["sha256"] for i in await source.get_package_hashes(package_version[0], package_version[1])}
     except ClientResponseError:
-        _LOGGER.exception(
+        _LOGGER.warning(
             "404 error retrieving hashes for: %r==%r on %r",package_version[0], package_version[1], package_version[2],
         )
         return False  # webpage might be down
@@ -144,6 +156,7 @@ async def _check_hashes(
     return True
 
 @with_semaphore(async_sem)
+@redirect_exception_message
 async def _get_all_versions(
     package_name: str,
     source: str,
@@ -154,7 +167,7 @@ async def _get_all_versions(
     try:
         accumulator[(package_name, source)] = await src.get_package_versions(package_name)
     except ClientResponseError:
-        _LOGGER.exception(
+        _LOGGER.warning(
             "404 error retrieving versions for: %r on %r", package_name, source,
         )
 
@@ -176,7 +189,7 @@ async def main():
     async_tasks = []
     for i in indexes:
         async_tasks.append(_gather_index_info(i, sources))
-    await asyncio.gather(*async_tasks)
+    await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
 
     all_pkgs = graph.get_python_packages_all(count=None, distinct=True)
@@ -188,7 +201,7 @@ async def main():
             removed_packages=removed_pkgs,
             missing_package=missing_package,
         ))
-    await asyncio.gather(*async_tasks)
+    await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
@@ -199,7 +212,7 @@ async def main():
 
     for i in all_pkg_names:
         async_tasks.append(_get_all_versions(package_name=i[0], source=i[1], sources=sources, accumulator=versions))
-    await asyncio.gather(*async_tasks)
+    await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
 
     _LOGGER.info("Checking integrity of %r package(s)", len(all_pkg_vers))
@@ -218,7 +231,7 @@ async def main():
             graph=graph,
         ))
 
-    await asyncio.gather(*async_tasks)
+    await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
 
 if __name__ == "__main__":
