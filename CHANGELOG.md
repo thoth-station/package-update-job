@@ -180,3 +180,18 @@ all the things that you see...
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.6 to 0.25.11 (#131)
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.5 to 0.25.6 (#129)
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.5 to 0.25.6 (#128)
+
+## Release 0.8.3 (2020-10-02T15:15:21)
+### Bug Fixes
+* exception won't cause runtime failure (#151)
+### Automatic Updates
+* :pushpin: Automatic update of dependency thoth-messaging from 0.7.8 to 0.7.10 (#160)
+* :pushpin: Automatic update of dependency thoth-messaging from 0.7.8 to 0.7.10 (#159)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.13 to 0.25.14 (#158)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.12 to 0.25.13 (#157)
+* :pushpin: Automatic update of dependency thoth-messaging from 0.7.7 to 0.7.8 (#156)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.11 to 0.25.12 (#155)
+* :pushpin: Automatic update of dependency pytest from 6.0.2 to 6.1.0 (#154)
+* :pushpin: Automatic update of dependency thoth-messaging from 0.7.6 to 0.7.7 (#153)
+* :pushpin: Automatic update of dependency thoth-python from 0.10.1 to 0.10.2 (#144)
+* :pushpin: Automatic update of dependency thoth-python from 0.10.1 to 0.10.2 (#143)
