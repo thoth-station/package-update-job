@@ -195,3 +195,15 @@ all the things that you see...
 * :pushpin: Automatic update of dependency thoth-messaging from 0.7.6 to 0.7.7 (#153)
 * :pushpin: Automatic update of dependency thoth-python from 0.10.1 to 0.10.2 (#144)
 * :pushpin: Automatic update of dependency thoth-python from 0.10.1 to 0.10.2 (#143)
+
+## Release 0.8.4 (2020-11-10T20:29:04)
+### Features
+* lock down thoth-messaging (#164)
+### Automatic Updates
+* :pushpin: Automatic update of dependency pytest from 6.1.1 to 6.1.2 (#173)
+* :pushpin: Automatic update of dependency pytest from 6.1.1 to 6.1.2 (#172)
+* :pushpin: Automatic update of dependency pre-commit from 2.7.1 to 2.8.2 (#171)
+* :pushpin: Automatic update of dependency pre-commit from 2.7.1 to 2.8.2 (#170)
+* :pushpin: Automatic update of dependency thoth-sourcemanagement from 0.3.2 to 0.3.3 (#169)
+* :pushpin: Automatic update of dependency thoth-sourcemanagement from 0.3.2 to 0.3.3 (#168)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.15 to 0.26.0 (#167)
