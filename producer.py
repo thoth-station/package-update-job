@@ -46,6 +46,7 @@ COMPONENT_NAME = "package-update-job"
 
 p = producer.create_producer()
 
+
 def redirect_exception_message(func):
     """Redirect a messages exception to be logged instead of halting execution."""
     async def inner_function(*args, **kwargs):
@@ -54,6 +55,7 @@ def redirect_exception_message(func):
         except Exception(e):
             _LOGGER.warning(e)
     return inner_function
+
 
 def with_semaphore(async_sem) -> Callable:
     """Only have N async functions running at the same time."""
@@ -66,6 +68,7 @@ def with_semaphore(async_sem) -> Callable:
         return somedec_inner
     return somedec_outer
 
+
 @with_semaphore(async_sem)
 async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index] = dict()
@@ -74,7 +77,8 @@ async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index]["packages"] = result
     aggregator[index]["packages"] = aggregator[index]["packages"].packages
 
-async def _check_package_availability(
+
+def _check_package_availability(
     package: Tuple[str, str, str],
     sources: Dict[str, Any],
     removed_packages: set,
@@ -96,6 +100,7 @@ async def _check_package_availability(
         except Exception as e:
             _LOGGER.exception("Failed to publish with the following error message: %r", e)
     return True
+
 
 @with_semaphore(async_sem)
 async def _check_hashes(
@@ -152,6 +157,7 @@ async def _check_hashes(
 
     return True
 
+
 @with_semaphore(async_sem)
 async def _get_all_versions(
     package_name: str,
@@ -166,6 +172,7 @@ async def _get_all_versions(
         _LOGGER.warning(
             "404 error retrieving versions for: %r on %r", package_name, source,
         )
+
 
 async def main():
     """Run package-update."""
@@ -190,7 +197,6 @@ async def main():
             package=pkg,
             sources=sources,
             removed_packages=removed_pkgs,
-            missing_package=missing_package,
         )
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
@@ -216,14 +222,13 @@ async def main():
                 package_versions=versions[(pkg_ver[0], pkg_ver[2])],
                 source=src,
                 removed_packages=removed_pkgs,
-                missing_version=missing_version,
-                hash_mismatch=hash_mismatch,
                 graph=graph,
             ),
         )
 
     await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
+
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
