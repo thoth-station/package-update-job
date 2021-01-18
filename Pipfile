@@ -12,11 +12,10 @@ pytest = "*"
 [packages]
 thoth-python = "*"
 thoth-storages = "*"
-faust = "*"
 aiomonitor = "*"
 prometheus-client = "<0.7.0"
 thoth-sourcemanagement = "*"
-thoth-messaging = "==0.7.13"
+thoth-messaging = "*"
 
 [requires]
 python_version = "3.8"

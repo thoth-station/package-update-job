@@ -21,7 +21,8 @@ from thoth.storages import GraphDatabase
 from thoth.python import AIOSource, AsyncIterableVersions
 from thoth.python import Source
 from thoth.common import init_logging
-from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage, MessageBase
+from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage
+import thoth.messaging.producer as producer
 
 import asyncio
 import logging
@@ -39,10 +40,12 @@ init_logging()
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.info("Thoth package update producer v%s", __package_update_version__)
 
-app = MessageBase().app
 SEMAPHORE_LIMIT = int(os.getenv("THOTH_PACKAGE_UPDATE_SEMAPHORE_LIMIT", 1000))
 async_sem = asyncio.Semaphore(SEMAPHORE_LIMIT)
 COMPONENT_NAME = "package-update-job"
+
+p = producer.create_producer()
+
 
 def redirect_exception_message(func):
     """Redirect a messages exception to be logged instead of halting execution."""
@@ -52,6 +55,7 @@ def redirect_exception_message(func):
         except Exception(e):
             _LOGGER.warning(e)
     return inner_function
+
 
 def with_semaphore(async_sem) -> Callable:
     """Only have N async functions running at the same time."""
@@ -64,8 +68,8 @@ def with_semaphore(async_sem) -> Callable:
         return somedec_inner
     return somedec_outer
 
+
 @with_semaphore(async_sem)
-@redirect_exception_message
 async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index] = dict()
     aggregator[index]["source"] = AIOSource(index)
@@ -73,45 +77,43 @@ async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index]["packages"] = result
     aggregator[index]["packages"] = aggregator[index]["packages"].packages
 
-@with_semaphore(async_sem)
-@redirect_exception_message
-async def _check_package_availability(
+
+def _check_package_availability(
     package: Tuple[str, str, str],
     sources: Dict[str, Any],
     removed_packages: set,
-    missing_package: MissingPackageMessage,
 ) -> bool:
     src = sources[package[1]]
     if not package[0] in src["packages"]:
         removed_packages.add((package[1], package[0]))
         try:
-            await missing_package.publish_to_topic(missing_package.MessageContents(
-                index_url=package[1],
-                package_name=package[0],
-                component_name=COMPONENT_NAME,
-                service_version=__package_update_version__,
-            ))
+            producer.publish_to_topic(
+                p, MissingPackageMessage(), MissingPackageMessage.MessageContents(
+                    index_url=package[1],
+                    package_name=package[0],
+                    component_name=COMPONENT_NAME,
+                    service_version=__package_update_version__,
+                ),
+            )
             _LOGGER.info("%r no longer provides %r", package[1], package[0])
             return False
         except Exception as e:
             _LOGGER.exception("Failed to publish with the following error message: %r", e)
     return True
 
+
 @with_semaphore(async_sem)
-@redirect_exception_message
 async def _check_hashes(
     package_version: Tuple[str, str, str],
     package_versions,
     source,
     removed_packages: set,
-    missing_version: MissingVersionMessage,
-    hash_mismatch: HashMismatchMessage,
     graph: GraphDatabase,
 ) -> bool:
     if not package_version[1] in package_versions.versions:
         try:
-            await missing_version.publish_to_topic(
-                missing_version.MessageContents(
+            producer.publish_to_topic(
+                p, MissingVersionMessage(), MissingVersionMessage.MessageContents(
                     index_url=package_version[2],
                     package_name=package_version[0],
                     package_version=package_version[1],
@@ -137,8 +139,8 @@ async def _check_hashes(
     )
     if not source_hashes == stored_hashes:
         try:
-            await hash_mismatch.publish_to_topic(
-                hash_mismatch.MessageContents(
+            producer.publish_to_topic(
+                p, HashMismatchMessage(), HashMismatchMessage.MessageContents(
                     index_url=package_version[2],
                     package_name=package_version[0],
                     package_version=package_version[1],
@@ -155,8 +157,8 @@ async def _check_hashes(
 
     return True
 
+
 @with_semaphore(async_sem)
-@redirect_exception_message
 async def _get_all_versions(
     package_name: str,
     source: str,
@@ -171,17 +173,13 @@ async def _get_all_versions(
             "404 error retrieving versions for: %r on %r", package_name, source,
         )
 
-@app.command()
+
 async def main():
     """Run package-update."""
     graph = GraphDatabase()
     graph.connect()
 
     removed_pkgs = set()
-
-    hash_mismatch = HashMismatchMessage()
-    missing_package = MissingPackageMessage()
-    missing_version = MissingVersionMessage()
 
     indexes = {x["url"] for x in graph.get_python_package_index_all()}
     sources = dict()
@@ -195,14 +193,11 @@ async def main():
     all_pkgs = graph.get_python_packages_all(count=None, distinct=True)
     _LOGGER.info("Checking availability of %r package(s)", len(all_pkgs))
     for pkg in all_pkgs:
-        async_tasks.append(_check_package_availability(
+        _check_package_availability(
             package=pkg,
             sources=sources,
             removed_packages=removed_pkgs,
-            missing_package=missing_package,
-        ))
-    await asyncio.gather(*async_tasks, return_exceptions=True)
-    async_tasks.clear()
+        )
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
 
@@ -221,18 +216,19 @@ async def main():
         if (pkg_ver[2], pkg_ver[0]) in removed_pkgs or versions[(pkg_ver[0], pkg_ver[2])] is None:  # in case of 404
             continue
         src = sources[pkg_ver[2]]["source"]
-        async_tasks.append(_check_hashes(
-            package_version=pkg_ver,
-            package_versions=versions[(pkg_ver[0], pkg_ver[2])],
-            source=src,
-            removed_packages=removed_pkgs,
-            missing_version=missing_version,
-            hash_mismatch=hash_mismatch,
-            graph=graph,
-        ))
+        async_tasks.append(
+            _check_hashes(
+                package_version=pkg_ver,
+                package_versions=versions[(pkg_ver[0], pkg_ver[2])],
+                source=src,
+                removed_packages=removed_pkgs,
+                graph=graph,
+            ),
+        )
 
     await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
+
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
