@@ -1,7 +1,22 @@
 ---
 repos:
+  - repo: local
+    hooks:
+      - id: pipenv_setup
+        name: pipenv_install
+        stages: [commit]
+        language: system
+        entry: pipenv install --dev --skip-lock
+        pass_filenames: false
+      - id: mypy
+        name: mypy
+        stages: [commit]
+        language: system
+        entry: pipenv run mypy
+        types: [python]
+        args: ["--ignore-missing-imports"]
   - repo: git://github.com/asottile/add-trailing-comma
-    rev: v2.0.2
+    rev: v2.1.0
     hooks:
       - id: add-trailing-comma
 
@@ -31,8 +46,3 @@ repos:
     rev: 5.1.1
     hooks:
       - id: pydocstyle
-
-  - repo: git://github.com/pre-commit/mirrors-mypy.git
-    rev: v0.790
-    hooks:
-      - id: mypy
