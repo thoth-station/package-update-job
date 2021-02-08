@@ -223,3 +223,7 @@ all the things that you see...
 * port to python 38 (#176)
 ### Improvements
 * removed bissenbay, thanks for your contributions!
+
+## Release 0.8.6 (2021-02-08T20:42:56)
+### Bug Fixes
+* :four_leaf_clover: fix the typing extension installation issue (#192)
