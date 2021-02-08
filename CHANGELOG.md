@@ -207,3 +207,19 @@ all the things that you see...
 * :pushpin: Automatic update of dependency thoth-sourcemanagement from 0.3.2 to 0.3.3 (#169)
 * :pushpin: Automatic update of dependency thoth-sourcemanagement from 0.3.2 to 0.3.3 (#168)
 * :pushpin: Automatic update of dependency thoth-storages from 0.25.15 to 0.26.0 (#167)
+
+## Release 0.8.5 (2021-02-08T19:05:59)
+### Features
+* :arrow_up: Automatic update of dependencies by Kebechet (#189)
+* :arrow_up: Automatic update of dependencies by Kebechet (#188)
+* Messaging v0.8 (#185)
+* :arrow_up: Automatic update of dependencies by kebechet. (#184)
+* :arrow_up: autoupdate of pre-commit plugins
+* :arrow_up: Automatic update of dependencies by kebechet. (#183)
+* update .aicoe-ci.yaml (#178)
+* :arrow_up: Automatic update of dependencies by kebechet. (#180)
+* set base to v0.20.1 (#179)
+* update .thoth.yaml (#177)
+* port to python 38 (#176)
+### Improvements
+* removed bissenbay, thanks for your contributions!
