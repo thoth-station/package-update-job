@@ -20,6 +20,6 @@
 from thoth.common import __version__ as __common__version__
 from thoth.storages import __version__ as __storages__version__
 __name__ = "package-update"
-__version__ = "0.8.4"
+__version__ = "0.8.5"
 __service_version__ = f"{__version__}+storage.{__storages__version__}.common.{__common__version__}"
 __author__ = "Kevin Postlethwait <k.postlethwait24@gmail.com>"
