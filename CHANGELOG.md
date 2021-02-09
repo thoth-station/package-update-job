@@ -227,3 +227,7 @@ all the things that you see...
 ## Release 0.8.6 (2021-02-08T20:42:56)
 ### Bug Fixes
 * :four_leaf_clover: fix the typing extension installation issue (#192)
+
+## Release 0.8.7 (2021-02-09T07:46:39)
+### Improvements
+* Removed unused package imports (#198)
