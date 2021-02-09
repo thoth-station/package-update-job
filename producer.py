@@ -26,7 +26,6 @@ import thoth.messaging.producer as producer
 
 import asyncio
 import logging
-import faust
 import os
 import ssl
 from functools import wraps
@@ -49,23 +48,28 @@ p = producer.create_producer()
 
 def redirect_exception_message(func):
     """Redirect a messages exception to be logged instead of halting execution."""
+
     async def inner_function(*args, **kwargs):
         try:
             await func(*args, **kwargs)
         except Exception(e):
             _LOGGER.warning(e)
+
     return inner_function
 
 
 def with_semaphore(async_sem) -> Callable:
     """Only have N async functions running at the same time."""
+
     def somedec_outer(fn):
         @wraps(fn)
         async def somedec_inner(*args, **kwargs):
             async with async_sem:
                 response = await fn(*args, **kwargs)
             return response
+
         return somedec_inner
+
     return somedec_outer
 
 
@@ -78,17 +82,15 @@ async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
     aggregator[index]["packages"] = aggregator[index]["packages"].packages
 
 
-def _check_package_availability(
-    package: Tuple[str, str, str],
-    sources: Dict[str, Any],
-    removed_packages: set,
-) -> bool:
+def _check_package_availability(package: Tuple[str, str, str], sources: Dict[str, Any], removed_packages: set) -> bool:
     src = sources[package[1]]
     if not package[0] in src["packages"]:
         removed_packages.add((package[1], package[0]))
         try:
             producer.publish_to_topic(
-                p, MissingPackageMessage(), MissingPackageMessage.MessageContents(
+                p,
+                MissingPackageMessage(),
+                MissingPackageMessage.MessageContents(
                     index_url=package[1],
                     package_name=package[0],
                     component_name=COMPONENT_NAME,
@@ -104,16 +106,14 @@ def _check_package_availability(
 
 @with_semaphore(async_sem)
 async def _check_hashes(
-    package_version: Tuple[str, str, str],
-    package_versions,
-    source,
-    removed_packages: set,
-    graph: GraphDatabase,
+    package_version: Tuple[str, str, str], package_versions, source, removed_packages: set, graph: GraphDatabase,
 ) -> bool:
     if not package_version[1] in package_versions.versions:
         try:
             producer.publish_to_topic(
-                p, MissingVersionMessage(), MissingVersionMessage.MessageContents(
+                p,
+                MissingVersionMessage(),
+                MissingVersionMessage.MessageContents(
                     index_url=package_version[2],
                     package_name=package_version[0],
                     package_version=package_version[1],
@@ -130,7 +130,7 @@ async def _check_hashes(
         source_hashes = {i["sha256"] for i in await source.get_package_hashes(package_version[0], package_version[1])}
     except ClientResponseError:
         _LOGGER.warning(
-            "404 error retrieving hashes for: %r==%r on %r",package_version[0], package_version[1], package_version[2],
+            "404 error retrieving hashes for: %r==%r on %r", package_version[0], package_version[1], package_version[2],
         )
         return False  # webpage might be down
 
@@ -140,12 +140,14 @@ async def _check_hashes(
     if not source_hashes == stored_hashes:
         try:
             producer.publish_to_topic(
-                p, HashMismatchMessage(), HashMismatchMessage.MessageContents(
+                p,
+                HashMismatchMessage(),
+                HashMismatchMessage.MessageContents(
                     index_url=package_version[2],
                     package_name=package_version[0],
                     package_version=package_version[1],
-                    missing_from_source=list(stored_hashes-source_hashes),
-                    missing_from_database=list(source_hashes-stored_hashes),
+                    missing_from_source=list(stored_hashes - source_hashes),
+                    missing_from_database=list(source_hashes - stored_hashes),
                     component_name=COMPONENT_NAME,
                     service_version=__package_update_version__,
                 ),
@@ -159,12 +161,7 @@ async def _check_hashes(
 
 
 @with_semaphore(async_sem)
-async def _get_all_versions(
-    package_name: str,
-    source: str,
-    sources,
-    accumulator: Dict[Tuple[Any, Any], Any]
-):
+async def _get_all_versions(package_name: str, source: str, sources, accumulator: Dict[Tuple[Any, Any], Any]):
     src = sources[source]["source"]
     try:
         accumulator[(package_name, source)] = await src.get_package_versions(package_name)
@@ -194,9 +191,7 @@ async def main():
     _LOGGER.info("Checking availability of %r package(s)", len(all_pkgs))
     for pkg in all_pkgs:
         _check_package_availability(
-            package=pkg,
-            sources=sources,
-            removed_packages=removed_pkgs,
+            package=pkg, sources=sources, removed_packages=removed_pkgs,
         )
 
     all_pkg_vers = graph.get_python_package_versions_all(count=None, distinct=True)
