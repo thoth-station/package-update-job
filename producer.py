@@ -21,10 +21,7 @@ from thoth.storages import GraphDatabase
 from thoth.python import AIOSource, AsyncIterableVersions
 from thoth.python import Source
 from thoth.common import init_logging
-from thoth.messaging import missing_package_message
-from thoth.messaging.missing_package import MissingPackageContents
-from thoth.messaging import missing_version_message, MissingVersionContents
-from thoth.messaging import hash_mismatch_message, HashMismatchContents
+from thoth.messaging import missing_version, missing_package, hash_mismatch
 import thoth.messaging.producer as producer
 
 import asyncio
@@ -89,14 +86,14 @@ def _check_package_availability(
     if not package[0] in src["packages"]:
         removed_packages.add((package[1], package[0]))
         try:
-            missing_p_contents: MissingPackageContents = {
+            missing_p_contents: missing_package.MessageContents = {
                 "index_url": package[1],
                 "package_name": package[0],
                 "component_name": COMPONENT_NAME,
                 "service_version": __package_update_version__,
             }
             producer.publish_to_topic(
-                p, missing_package_message, missing_p_contents,
+                p, missing_package.message, missing_p_contents,
             )
             _LOGGER.info("%r no longer provides %r", package[1], package[0])
             return False
@@ -115,14 +112,14 @@ async def _check_hashes(
 ) -> bool:
     if not package_version[1] in package_versions.versions:
         try:
-            missing_v_contents: MissingVersionContents = {
+            missing_v_contents: missing_version.MessageContents = {
                 "index_url": package_version[2],
                 "package_name": package_version[0],
                 "package_version": package_version[1],
                 "component_name": COMPONENT_NAME,
                 "service_version": __package_update_version__,
             }
-            producer.publish_to_topic(p, missing_version_message, missing_v_contents)
+            producer.publish_to_topic(p, missing_version.message, missing_v_contents)
             _LOGGER.info("%r no longer provides %r-%r", package_version[2], package_version[0], package_version[1])
             return False
         except Exception as identifier:
@@ -141,7 +138,7 @@ async def _check_hashes(
     )
     if not source_hashes == stored_hashes:
         try:
-            h_mismatch_contents: HashMismatchContents = {
+            h_mismatch_contents: hash_mismatch.MessageContents = {
                 "index_url": package_version[2],
                 "package_name": package_version[0],
                 "package_version": package_version[1],
@@ -150,7 +147,7 @@ async def _check_hashes(
                 "component_name": COMPONENT_NAME,
                 "service_version": __package_update_version__,
             }
-            producer.publish_to_topic(p, hash_mismatch_message, h_mismatch_contents)
+            producer.publish_to_topic(p, hash_mismatch.message, h_mismatch_contents)
             _LOGGER.debug("Source hashes:\n%r\nStored hashes:\n%r\nDo not match!", source_hashes, stored_hashes)
             return False
         except Exception as identifier:
