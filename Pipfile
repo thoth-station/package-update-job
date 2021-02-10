@@ -16,7 +16,7 @@ thoth-storages = "*"
 aiomonitor = "*"
 prometheus-client = "<0.7.0"
 thoth-sourcemanagement = "*"
-thoth-messaging = "*"
+thoth-messaging = {ref = "feature-jsonschema", git = "https://github.com/KPostOffice/messaging.git"}
 
 [requires]
 python_version = "3.8"
