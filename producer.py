@@ -74,7 +74,7 @@ def with_semaphore(async_sem) -> Callable:
 
 
 @with_semaphore(async_sem)
-async def _gather_index_info(index: str, aggregator: Dict[str, Any],) -> None:
+async def _gather_index_info(index: str, aggregator: Dict[str, Any]) -> None:
     aggregator[index] = dict()
     aggregator[index]["source"] = AIOSource(index)
     result = await aggregator[index]["source"].get_packages()
