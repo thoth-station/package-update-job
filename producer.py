@@ -223,6 +223,7 @@ async def main():
 
     await asyncio.gather(*async_tasks, return_exceptions=True)
     async_tasks.clear()
+    p.flush()
 
 
 if __name__ == "__main__":
