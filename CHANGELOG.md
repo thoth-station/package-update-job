@@ -231,3 +231,16 @@ all the things that you see...
 ## Release 0.8.7 (2021-02-09T07:46:39)
 ### Improvements
 * Removed unused package imports (#198)
+
+## Release 0.8.8 (2021-06-03T17:36:19)
+### Features
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet
+* flush all pending messages (#206)
+* constrain thoth-messaging
+* :arrow_up: Automatic update of dependencies by Kebechet (#203)
+### Improvements
+* :robot: ci updates w.r.t prow, thoth and aicoe-ci (#205)
+* use py38 image
+### Other
+* remove thoth-sourcemanagement from dependencies (#207)
