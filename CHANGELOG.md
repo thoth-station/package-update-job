@@ -244,3 +244,7 @@ all the things that you see...
 * use py38 image
 ### Other
 * remove thoth-sourcemanagement from dependencies (#207)
+
+## Release 0.8.9 (2021-06-14T15:01:01)
+### Features
+* :arrow_up: Automatic update of dependencies by Kebechet
