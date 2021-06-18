@@ -14,7 +14,7 @@ thoth-python = "*"
 thoth-storages = "*"
 aiomonitor = "*"
 prometheus-client = "<0.7.0"
-thoth-messaging = "<=0.13"
+thoth-messaging = "*"
 
 [requires]
 python_version = "3.8"

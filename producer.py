@@ -21,7 +21,10 @@ from thoth.storages import GraphDatabase
 from thoth.python import AIOSource, AsyncIterableVersions
 from thoth.python import Source
 from thoth.common import init_logging
-from thoth.messaging import MissingPackageMessage, MissingVersionMessage, HashMismatchMessage
+from thoth.messaging import missing_package_message, missing_version_message, hash_mismatch_message
+from thoth.messaging.missing_package import MessageContents as MissingPackageContents
+from thoth.messaging.missing_version import MessageContents as MissingVersionContents
+from thoth.messaging.hash_mismatch import MessageContents as HashMismatchContents
 import thoth.messaging.producer as producer
 
 import asyncio
@@ -89,8 +92,8 @@ def _check_package_availability(package: Tuple[str, str, str], sources: Dict[str
         try:
             producer.publish_to_topic(
                 p,
-                MissingPackageMessage(),
-                MissingPackageMessage.MessageContents(
+                missing_package_message,
+                MissingPackageContents(
                     index_url=package[1],
                     package_name=package[0],
                     component_name=COMPONENT_NAME,
@@ -112,8 +115,8 @@ async def _check_hashes(
         try:
             producer.publish_to_topic(
                 p,
-                MissingVersionMessage(),
-                MissingVersionMessage.MessageContents(
+                missing_version_message,
+                MissingVersionContents(
                     index_url=package_version[2],
                     package_name=package_version[0],
                     package_version=package_version[1],
@@ -141,8 +144,8 @@ async def _check_hashes(
         try:
             producer.publish_to_topic(
                 p,
-                HashMismatchMessage(),
-                HashMismatchMessage.MessageContents(
+                hash_mismatch_message,
+                HashMismatchContents(
                     index_url=package_version[2],
                     package_name=package_version[0],
                     package_version=package_version[1],
