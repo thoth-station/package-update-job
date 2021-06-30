@@ -248,3 +248,10 @@ all the things that you see...
 ## Release 0.8.9 (2021-06-14T15:01:01)
 ### Features
 * :arrow_up: Automatic update of dependencies by Kebechet
+
+## Release 0.8.10 (2021-06-30T01:23:43)
+### Features
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :arrow_up: Automatic update of dependencies by Kebechet
+* :zap: update to pydantic calling convention for messaging
+* :arrow_up: Automatic update of dependencies by Kebechet
