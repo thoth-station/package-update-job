@@ -21,6 +21,7 @@ managers:
         - goern
         - fridex
         - sesheta
+        - harshad16
       assignees:
         - sesheta
       labels: [bot]
