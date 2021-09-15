@@ -1,5 +1,10 @@
 # Changelog for Thoth's Template GitHub Project
 
+## Release 0.8.12 (2021-09-15T04:38:57)
+### Features
+* Add harshad as a maintainer
+* Update of the dependencies
+
 ## [0.1.0] - 2019-Sep-11 - goern
 
 ### Added
