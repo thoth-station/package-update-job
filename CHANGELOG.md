@@ -1,5 +1,16 @@
 # Changelog for Thoth's Template GitHub Project
 
+## Release 0.8.15 (2022-01-31T21:58:23)
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* Enable TLS verification
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* Update pyproject.toml to use Python 3.8
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* Colon is not allowed in runtime environment name
+
 ## Release 0.8.14 (2021-11-08T12:06:28)
 * :arrow_up: Automatic update of dependencies by Kebechet for the ubi:8 environment
 
