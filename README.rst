@@ -1,6 +1,13 @@
-# thoth-package-update-job
-
+Thoth Package  Update Job
 --------------------------
+
+.. image:: https://img.shields.io/github/v/tag/thoth-station/package-update-job?style=plastic
+  :target: https://github.com/thoth-station/package-update-job/tags
+  :alt: GitHub tag (latest by date)
+
+.. image:: https://quay.io/repository/thoth-station/package-update-job/status
+  :target: https://quay.io/repository/thoth-station/package-update-job?tab=tags
+  :alt: Quay - Build
 
 This job iterates over the packages in our database to ensure that they:
 
@@ -25,8 +32,8 @@ decide how to handle the update.
 Installation and Deployment
 ===========================
 
-The job is an OpenShift s2i build, the deployment is done via Ansible
-playbooks that live in the [core repository](https://github.com/thoth-station/core).
+The job is an OpenShift s2i build, the deployment is done via Kustomize,
+deployment templates are live in the `core repository <https://github.com/thoth-station/thoth-application/tree/master/package-update/overlays/test>`__.
 
 Running the job locally
 =======================
@@ -39,11 +46,11 @@ your virtual environment:
   $ pipenv install  --dev # Install all the requirements
 
 After that, you need to run a local instance of database - follow
-[instructions in the README](https://github.com/thoth-station/storages#running-postgresql-locally) file for
+`instructions in the README <https://github.com/thoth-station/storages#running-postgresql-locally>`__ file for
 more info and prepare the database schema:
 
   $ pipenv run python3 ./app.py
 
 Job will talk to your local database instance by default which is located at
-`localhost:5432` by default. And your local Kafka instance which is `localhost:9092`
+```localhost:5432`` by default. And your local Kafka instance which is ``localhost:9092``
 by default.
