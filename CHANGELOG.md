@@ -1,5 +1,11 @@
 # Changelog for Thoth's Template GitHub Project
 
+## Release 0.8.16 (2022-05-09T19:38:42)
+* ca08b48 :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* ce23493 :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* a840627 updating pre-commit protocol and aicoe build-strategy
+* cb90e4c :medal_sports: set badges for easy access to content
+
 ## Release 0.8.15 (2022-01-31T21:58:23)
 * :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
 * :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
