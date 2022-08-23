@@ -1,5 +1,12 @@
 # Changelog for Thoth's Template GitHub Project
 
+## Release 0.8.17 (2022-08-23T04:34:10)
+* e918b82 :hatched_chick: Updated the dependencies and prow config
+* d8e6a95 :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* cec8caa :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
+* 2ca8448 Autoupdate pre-commit hooks
+* 8120c4f Upgrade pre-commit image version
+
 ## Release 0.8.16 (2022-05-09T19:38:42)
 * ca08b48 :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
 * ce23493 :arrow_up: Automatic update of dependencies by Kebechet for the ubi-8 environment
