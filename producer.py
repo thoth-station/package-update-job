@@ -181,7 +181,7 @@ async def main():
 
     removed_pkgs = set()
 
-    indexes = {x["url"] for x in graph.get_python_package_index_all()}
+    indexes = {x["url"] for x in graph.get_python_package_index_all(enabled=True)}
     sources = dict()
 
     async_tasks = []
