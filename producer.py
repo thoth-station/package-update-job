@@ -87,7 +87,7 @@ async def _gather_index_info(index: str, aggregator: Dict[str, Any]) -> None:
 
 def _check_package_availability(package: Tuple[str, str, str], sources: Dict[str, Any], removed_packages: set) -> bool:
     src = sources[package[1]]
-    if not package[0] in src["packages"]:
+    if not package[0] in src.get("packages", []):
         removed_packages.add((package[1], package[0]))
         try:
             producer.publish_to_topic(
@@ -181,7 +181,7 @@ async def main():
 
     removed_pkgs = set()
 
-    indexes = {x["url"] for x in graph.get_python_package_index_all()}
+    indexes = {x["url"] for x in graph.get_python_package_index_all(enabled=True)}
     sources = dict()
 
     async_tasks = []
